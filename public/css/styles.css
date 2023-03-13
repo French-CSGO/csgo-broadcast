@@ -1,0 +1,18 @@
+table, h1, h4, header, div {
+	width: 100%;
+	text-align: center;
+}
+
+a:link, a:visited, a:hover, a:active {
+	color: #5fa9ee;
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+	background-color: #1c1c1e;
+	color: #fefefe;
+	}
+	img {
+	filter: grayscale(20%);
+	}
+	}
