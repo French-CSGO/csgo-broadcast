@@ -1,0 +1,52 @@
+body > header {
+    background-image: url("../images/terro.png");
+    background-position: bottom;
+    background-position-x: 70%;
+    background-size: 10%;
+    background-repeat: no-repeat;
+    
+}
+
+
+/*
+.players {
+    display: flex;
+    margin: 0 auto;
+    align-items: center;
+}
+
+.square1 {
+    width: 50px;
+    height: 50px;
+    background-color: #eda338;
+    margin-right: 10px;
+}
+
+.square2 {
+    width: 50px;
+    height: 50px;
+    background-color: #109856;
+    margin-right: 10px;
+}
+
+.square3 {
+    width: 50px;
+    height: 50px;
+    background-color: #68a3e5;
+    margin-right: 10px;
+}
+
+.square4 {
+    width: 50px;
+    height: 50px;
+    background-color: #e6f13d;
+    margin-right: 10px;
+}
+
+.square5 {
+    width: 50px;
+    height: 50px;
+    background-color: #803ca1;
+    margin-right: 10px;
+}
+*/

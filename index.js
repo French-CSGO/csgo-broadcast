@@ -28,6 +28,7 @@ server.get(/\w+\.(css|js|png|ico|svg)$/, (req, res) => {
 });
 
 // Routes
+server.use("/admin", require("./private/admin.js"));
 server.use("/broadcast", require("./private/broadcast.js"));
 server.use("/match", require("./private/match.js"));
 server.use("/api", require("./private/api.js")(matches));
