@@ -1,3 +1,14 @@
+body { /* 80% here is our page width... */
+    grid-template-columns: 0fr 100% 0fr;
+    place-content: center;
+}
+
+main { /* 80% here is our page width... */
+    width: 65%;
+    margin: 0 auto;
+}
+
+/*
 body > header {
     background-image: url("../images/terro.png");
     background-position: bottom;
@@ -6,9 +17,6 @@ body > header {
     background-repeat: no-repeat;
     
 }
-
-
-/*
 .players {
     display: flex;
     margin: 0 auto;
