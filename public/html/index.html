@@ -9,28 +9,27 @@
 	<script src="index.js"></script>
 </head>
 <body>
+	<!-- 
 	<header>
-
 		<h1>Titre</h1>
-
 		<a href="/"><button>Matches</button></a>
 		<a href="/faq"><button>FAQ</button></a>
 		<a href="/admin/management"><button>Management</button></a>
-
 	</header>
+    -->
 	<main>
-		<h1>Live Matches</h1>
+		<h1>Matchs en cours</h1>
 		<table>
 			<thead>
 				<tr>
 					<th>Match Token</th>
-					<th>Teamname</th>
+					<th>Equipes</th>
 					<th>Timestamp</th>
-					<th>Map</th>
+					<th>Carte</th>
 					<th>Tickrate</th>
-					<th>Last Response</th>
-					<th>Viewers</th>
-					<th>Status</th>
+					<th>Dernière actualisation</th>
+					<th>Spectateurs</th>
+					<th>Statut</th>
 				</tr>
 			</thead>
 			<tbody id="tableBodyLive">
@@ -49,18 +48,18 @@
 
 		<br><hr>
 
-		<h1>Past Matches</h1>
-		<h4><i>Up to 14 days/336 hours</i></h4>
+		<h1>Matchs passés à revoir</h1>
+		<h4><i>Historique sur 14 jours / 336 heures</i></h4>
 		<table>
 			<thead>
 				<tr>
 					<th>Match Token</th>
-					<th>Teamname</th>
+					<th>Equipes</th>
 					<th>Timestamp</th>
-					<th>Map</th>
+					<th>Carte</th>
 					<th>Tickrate</th>
-					<th>Ended</th>
-					<th>Replay</th>
+					<th>Fini depuis</th>
+					<th>Revoir</th>
 				</tr>
 			</thead>
 			<tbody id="tableBodyPast">
@@ -71,7 +70,7 @@
 					<td>matches</td>
 					<td>available</td>
 					<td></td>
-					<td>No download available</td>
+					<td></td>
 				</tr>
 			</tbody>
 		</table>
