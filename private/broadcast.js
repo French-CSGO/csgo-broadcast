@@ -49,7 +49,7 @@ server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
 			}));
 
 			// TEST
-			getTeamsName(req.params.token);
+			// getTeamsName(req.params.token);
 		}
 
 		if (fs.existsSync("./bin/" + req.params.token) === false) {

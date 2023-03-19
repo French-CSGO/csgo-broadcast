@@ -3,45 +3,54 @@ const { DemoFile } = require('demofile');
 const { exit } = require('process');
 const fs = require("fs");
 
-async function getTeamsName(id) {
-  try {
-    const filePath = `./bin/${id}/config.json`;
+function getTeamsName(id) {
 
-    const df = new DemoFile();
-    // Start parsing the stream now that we've added our event listeners
-    df.parseBroadcast(`https://broadcast.white-gaming.fr/match/${id}`);
+    const maxRetries = 100;
+    let retries = 0;
 
-    df.gameEvents.on("weapon_fire", () => {
-      console.log(df.teams[2].clanName)
-      console.log(df.teams[3].clanName)
-    
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error(`Erreur lors de la lecture du fichier : ${err}`);
-          exit(0);
-        }
-        let jsonObject = JSON.parse(data);
+    while (retries < maxRetries) {
 
-        jsonObject.team1 = df.teams[2].clanName;
-        jsonObject.team2 = df.teams[3].clanName;
+      try {
 
-        const updatedJson = JSON.stringify(jsonObject, null, 2);
+        const filePath = `./bin/${id}/config.json`;
 
-        fs.writeFile(filePath, updatedJson, 'utf8', (err) => {
-          if (err) {
-            console.error(`Erreur lors de l'écriture du fichier : ${err}`);
+        const df = new DemoFile();
+        // Start parsing the stream now that we've added our event listeners
+        df.parseBroadcast(`https://broadcast.white-gaming.fr/match/${id}`);
 
-            exit(0);
-          }
-          console.log('Fichier JSON mis à jour avec succès.');
-          exit(0);
+        df.gameEvents.on("weapon_fire", () => {
+          console.log(df.teams[2].clanName)
+          console.log(df.teams[3].clanName)
+        
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+              console.error(`Erreur lors de la lecture du fichier : ${err}`);
+              exit(0);
+            }
+            let jsonObject = JSON.parse(data);
+
+            jsonObject.team1 = df.teams[2].clanName;
+            jsonObject.team2 = df.teams[3].clanName;
+
+            const updatedJson = JSON.stringify(jsonObject, null, 2);
+
+            fs.writeFile(filePath, updatedJson, 'utf8', (err) => {
+              if (err) {
+                console.error(`Erreur lors de l'écriture du fichier : ${err}`);
+
+                exit(0);
+              }
+              console.log('Fichier JSON mis à jour avec succès.');
+              exit(0);
+            });
+          });
         });
-      });
-    });
 
-  } catch (err) {
-    console.error(`Erreur : ${err}`);
+  } catch  (error) {
+    retries++;
+    console.error(`Attempt ${retries} failed with error: ${error}`);
   }
+}
 }
 
 module.exports = getTeamsName;

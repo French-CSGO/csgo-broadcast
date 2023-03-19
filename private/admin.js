@@ -85,14 +85,12 @@ server.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-
-
 server.get('/management', authenticateJWT, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "html", "management.html"));
 });
 
 server.get("/auth", (req, res) => {
-	res.sendFile(path.join(__dirname, "..", "public", "html", "loginform.html"));
+  res.sendFile(path.join(__dirname, "..", "public", "html", "loginform.html"));
 });
 
 // Export
