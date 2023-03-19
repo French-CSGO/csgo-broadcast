@@ -11,11 +11,11 @@ async function getTeamsName(id) {
     // Start parsing the stream now that we've added our event listeners
     df.parseBroadcast(`https://broadcast.white-gaming.fr/match/${id}`);
 
-    df.gameEvents.on("weapon_fire", async () => {
+    df.gameEvents.on("weapon_fire", () => {
       console.log(df.teams[2].clanName)
       console.log(df.teams[3].clanName)
     
-      fs.readFile(filePath, 'utf8', async (err, data) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           console.error(`Erreur lors de la lecture du fichier : ${err}`);
           exit(0);

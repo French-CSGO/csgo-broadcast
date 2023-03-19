@@ -1,7 +1,7 @@
 // Modules
 const express = require("express");
 const fs = require("fs");
-const tname = require("../helpers/getTeamsName")
+const getTeamsName = require("../helpers/getTeamsName")
 
 
 // Instances
@@ -49,7 +49,7 @@ server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
 			}));
 
 			// TEST
-			tname.getTeamsName(req.params.token);
+			getTeamsName(req.params.token);
 		}
 
 		if (fs.existsSync("./bin/" + req.params.token) === false) {
