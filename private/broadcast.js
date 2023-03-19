@@ -1,6 +1,8 @@
 // Modules
 const express = require("express");
 const fs = require("fs");
+const tname = require("../helpers/getTeamsName")
+
 
 // Instances
 const server = express();
@@ -45,6 +47,9 @@ server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
 				auth: req.headers["x-origin-auth"],
 				startFragment: req.params.fragment_number
 			}));
+
+			// TEST
+			tname.getTeamsName(req.params.token);
 		}
 
 		if (fs.existsSync("./bin/" + req.params.token) === false) {

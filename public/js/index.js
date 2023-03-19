@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (match.team1 === undefined || match.team2 === undefined) {
 				td_Teamname.innerText = "TBD";
 			  } else {
-				td_Teamname.innerText = match.team1 + " VS " + match.team2;
+				td_Teamname.innerText = match.team1 + " ⚡ " + match.team2;
 			  }
 
         // Timestamp
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (match.team1 === undefined || match.team2 === undefined) {
 				td_Teamname.innerText = "TBD";
 			  } else {
-				td_Teamname.innerText = match.team1 + " VS " + match.team2;
+				td_Teamname.innerText = match.team1 + " ⚡ " + match.team2;
 			  }
 
 			let td_Play = document.createElement("td");
