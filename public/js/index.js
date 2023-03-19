@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		[...tbodyLive.children].forEach(c => c.remove());
 		[...tbodyPast.children].forEach(c => c.remove());
 
+		// Check if matches are live
 		if (live.length <= 0) {
 			let empty = document.createElement("td");
 			empty.innerText = "";
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			tbodyLive.appendChild(no);
 			tbodyLive.appendChild(mtches);
 			tbodyLive.appendChild(available);
+			tbodyLive.appendChild(empty.cloneNode());
 			tbodyLive.appendChild(empty.cloneNode());
 			tbodyLive.appendChild(empty.cloneNode());
 		}
@@ -66,14 +68,27 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		for (let match of live) {
+		// New line 
 			let tr = document.createElement("tr");
 
+		// Actions
 			let td_Play = document.createElement("td");
-			let a = document.createElement("a");
-			a.href = "steam://rungame/730/76561202255233023/+playcast%20%22" + window.location.origin + "/match/" + match.token + "%22";
-			a.innerText = match.token;
-			td_Play.appendChild(a);
+			let a = document.createElement("button");
+			a.textContent = 'Lancer';
+			a.addEventListener('click', function() {
+				exec(match.token) ;
+			});
+			// Create a button to copy the console command to the client clipboard 
+			const b = document.createElement('button');
+			b.textContent = 'Commande';
+			b.addEventListener('click', function() {
+				copy(match.token) ;
+			});
 
+			td_Play.appendChild(a);
+			td_Play.appendChild(b);
+
+		// Teams 
 			let td_Teamname = document.createElement("td");
 			if (match.team1 === undefined || match.team2 === undefined) {
 				td_Teamname.innerText = "TBD";
@@ -81,23 +96,29 @@ document.addEventListener("DOMContentLoaded", () => {
 				td_Teamname.innerText = match.team1 + " VS " + match.team2;
 			  }
 
+        // Timestamp
 			let td_Timestamp = document.createElement("td");
 			td_Timestamp.innerText = moment(match.timestamp).format("Do MMMM YYYY - HH:mm:ss");
-
+       
+		// Map
 			let td_Map = document.createElement("td");
 			td_Map.innerText = match.map;
 
+		// Tickrate
 			let td_Tickrate = document.createElement("td");
 			td_Tickrate.innerText = typeof match.tps !== "number" ? parseInt(match.tps) : match.tps;
 
+		// Last response
 			let td_Response = document.createElement("td");
 			td_Response.innerText = moment.duration(Date.now() - (match.lastEdit * 1000)).format("HH:mm:ss", { trim: false });
 			td_Response.id = match.lastEdit;
 			td_Response.classList.add("lastResponse");
 
+		// Viewers count
 			let td_Viewers = document.createElement("td");
 			td_Viewers.innerText = match.viewers;
 
+		// Status
 			let td_Status = document.createElement("td");
 			td_Status.innerText = Date.now() - (match.lastEdit * 1000) > (60 * 1000) ? "OFFLINE" : "LIVE";
 
@@ -141,10 +162,21 @@ document.addEventListener("DOMContentLoaded", () => {
 			td_Response.classList.add("lastResponse");
 
 			let td_Status = document.createElement("td");
-			let a = document.createElement("a");
-			a.href = "steam://rungame/730/76561202255233023/+playcast%20%22" + window.location.origin + "/match/" + match.token + "%22";
-			a.innerText = "Replay";
+			// Run with CS:GO
+			let a = document.createElement("button");
+			a.textContent = 'Lancer';
+			a.addEventListener('click', function() {
+				exec(match.token) ;
+			});
+			// Create a button to copy the console command to the client clipboard 
+			const b = document.createElement('button');
+			b.textContent = 'Commande';
+			b.addEventListener('click', function() {
+				copy(match.token) ;
+			});
+
 			td_Status.appendChild(a);
+			td_Status.appendChild(b);
 
 			tr.appendChild(td_Play);
 			tr.appendChild(td_Teamname);
@@ -169,3 +201,16 @@ setInterval(() => {
 		}
 	});
 }, 250);
+
+// Function to copy to clipboard
+function copy(id) {
+	var copyText = 'playcast "' + window.location.origin + '/match/' + id + '"';
+	 // Copy the text inside the text field
+	alert(copyText);
+}
+
+// Function to run CS:GO and exec playcast
+function exec(id) {
+	const link = "steam://rungame/730/76561202255233023/+playcast%20%22" + window.location.origin + "/match/" + id + "%22";
+	window.open(link, "_self");
+}

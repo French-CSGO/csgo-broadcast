@@ -4,8 +4,12 @@ body { /* 80% here is our page width... */
 }
 
 main { /* 80% here is our page width... */
-    width: 65%;
+    width: 80%;
     margin: 0 auto;
+}
+
+button {
+    margin: 0.5rem;
 }
 
 /*
