@@ -64,7 +64,8 @@ server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
 				tick: req.query.tick
 			});
 
-			if (json.length > 5) {
+			// See ./match.js, line 67 : increase to 10.
+			if (json.length > 10) {
 				json.shift();
 			}
 

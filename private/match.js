@@ -31,7 +31,8 @@ server.get("/:token/sync", async (req, res) => {
 	}
 
 	// If we have less than 5 fragments we 404 as not enough data is available yet
-	if (frames.length < 5) {
+	// Fix 404 problems with increase this value to 10
+	if (frames.length < 10) {
 		res.sendStatus(404);
 		return;
 	}
