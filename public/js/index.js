@@ -80,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			// Create a button to copy the console command to the client clipboard 
 			const b = document.createElement('button');
+			b.id = match.token;
 			b.textContent = 'Commande';
 			b.addEventListener('click', function() {
 				copy(match.token) ;
@@ -90,8 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// Teams 
 			let td_Teamname = document.createElement("td");
-			if (match.team1 === undefined || match.team2 === undefined) {
-				td_Teamname.innerText = "TBD";
+			if (match.team1 === "TBD" || match.team2 === "TBD") {
+				let a = document.createElement("button");
+				a.textContent = 'Actualiser';
+				a.addEventListener('click', function() {
+					getTeams(match.token);
+				});
+				td_Teamname.appendChild(a);
 			  } else {
 				td_Teamname.innerText = match.team1 + " ⚡ " + match.team2;
 			  }
@@ -170,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			// Create a button to copy the console command to the client clipboard 
 			const b = document.createElement('button');
+			b.id = match.token;
 			b.textContent = 'Commande';
 			b.addEventListener('click', function() {
 				copy(match.token) ;
@@ -204,13 +211,34 @@ setInterval(() => {
 
 // Function to copy to clipboard
 function copy(id) {
+	const bouton = document.getElementById(id);
+	const texteOriginal = bouton.textContent;
+    bouton.textContent = 'Copié !';
+    
 	var copyText = 'playcast "' + window.location.origin + '/match/' + id + '"';
-	 // Copy the text inside the text field
-	alert(copyText);
+	// Copy the text 
+	navigator.clipboard.writeText(copyText)
+        .then(() => {
+            console.log('Texte copié dans le presse-papiers');
+        })
+        .catch((err) => {
+            console.error('Erreur lors de la copie du texte dans le presse-papiers: ', err);
+        });
+	setTimeout(function() {
+		bouton.textContent = texteOriginal;
+	}, 5000);
+	// Alert the text
+	// alert(copyText);
 }
 
 // Function to run CS:GO and exec playcast
 function exec(id) {
 	const link = "steam://rungame/730/76561202255233023/+playcast%20%22" + window.location.origin + "/match/" + id + "%22";
 	window.open(link, "_self");
+}
+
+function getTeams(token) {
+
+
+
 }

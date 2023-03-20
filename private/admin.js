@@ -9,6 +9,9 @@ const path = require("path");
 // Read secrets from the .env file
 require('dotenv').config()
 
+// Use workers to move execution of some functions 
+const { Worker } = require('worker_threads');
+
 const secret = process.env.SECRET;
 
 // Instances
@@ -92,6 +95,32 @@ server.get('/management', authenticateJWT, (req, res) => {
 server.get("/auth", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "html", "loginform.html"));
 });
+
+server.get("/getTeamsName", async (req, res) => {
+  // Create the worker.
+  await getTeamsNameWorker(req.params.token);
+});
+
+// Worker 
+function getTeamsNameWorker(id) {
+	return new Promise((resolve, reject) => {
+	  const worker = new Worker('./helpers/getTeamsName.js', { workerData: { id } });
+  
+	  worker.on('message', (result) => {
+		resolve(result);
+	  });
+  
+	  worker.on('error', (error) => {
+		reject(error);
+	  });
+  
+	  worker.on('exit', (code) => {
+		if (code !== 0) {
+		  reject(new Error(`Worker stopped with exit code ${code}`));
+		}
+	  });
+	});
+  }
 
 // Export
 module.exports = server;

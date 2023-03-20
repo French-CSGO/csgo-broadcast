@@ -2,9 +2,6 @@
 const express = require("express");
 const fs = require("fs");
 
-// Use workers to move execution of some functions 
-const { Worker } = require('worker_threads');
-
 // Instances
 const server = express();
 
@@ -49,8 +46,6 @@ server.post("/:token/:fragmentNumber/:frameType", async (req, res) => {
 				startFragment: req.params.fragment_number
 			}));
 
-			// Create the worker.
-			await getTeamsName(req.params.token);
 		}
 
 		if (fs.existsSync("./bin/" + req.params.token) === false) {
@@ -85,27 +80,6 @@ server.post("/:token/:fragmentNumber/:frameType", async (req, res) => {
 server.all("*", (req, res) => {
 	res.redirect("/");
 });
-
-// Worker 
-function getTeamsName(id) {
-	return new Promise((resolve, reject) => {
-	  const worker = new Worker('../helpers/getTeamsName.js', { workerData: { id } });
-  
-	  worker.on('message', (result) => {
-		resolve(result);
-	  });
-  
-	  worker.on('error', (error) => {
-		reject(error);
-	  });
-  
-	  worker.on('exit', (code) => {
-		if (code !== 0) {
-		  reject(new Error(`Worker stopped with exit code ${code}`));
-		}
-	  });
-	});
-  }
 
 // Export
 module.exports = server;
