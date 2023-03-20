@@ -8,8 +8,34 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    # restart: always
     ports:
       - '8181:8181'
     environment:
       - NODE_ENV=development
-    command: npm run start:dev
+    networks:
+      - app-network
+    command: npm run preprod
+
+  caddy:
+    image: caddy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    # restart: always
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

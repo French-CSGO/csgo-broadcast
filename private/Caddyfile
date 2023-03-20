@@ -1,0 +1,5 @@
+csgo.zettalab.net {
+    reverse_proxy app:8181
+    encode gzip
+    tls contact@zettalab.fr
+}
