@@ -2,21 +2,17 @@
 const { DemoFile } = require('demofile');
 const { exit } = require('process');
 const fs = require("fs");
+require('dotenv').config()
+
+const { workerData, parentPort } = require('worker_threads')
 
 function getTeamsName(id) {
-
-    const maxRetries = 100;
-    let retries = 0;
-
-    while (retries < maxRetries) {
-
-      try {
 
         const filePath = `./bin/${id}/config.json`;
 
         const df = new DemoFile();
         // Start parsing the stream now that we've added our event listeners
-        df.parseBroadcast(`https://broadcast.white-gaming.fr/match/${id}`);
+        df.parseBroadcast(`${process.env.URL}/match/${id}`);
 
         df.gameEvents.on("weapon_fire", () => {
           console.log(df.teams[2].clanName)
@@ -33,11 +29,11 @@ function getTeamsName(id) {
             jsonObject.team2 = df.teams[3].clanName;
 
             const updatedJson = JSON.stringify(jsonObject, null, 2);
+            parentPort.postMessage({ hello: workerData })
 
             fs.writeFile(filePath, updatedJson, 'utf8', (err) => {
               if (err) {
                 console.error(`Erreur lors de l'écriture du fichier : ${err}`);
-
                 exit(0);
               }
               console.log('Fichier JSON mis à jour avec succès.');
@@ -45,12 +41,11 @@ function getTeamsName(id) {
             });
           });
         });
-
-  } catch  (error) {
-    retries++;
-    console.error(`Attempt ${retries} failed with error: ${error}`);
-  }
-}
 }
 
-module.exports = getTeamsName;
+// Receive the id from the main thread
+parentPort.postMessage(
+  getTeamsName(
+    workerData.id
+  )
+);
