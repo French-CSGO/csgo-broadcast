@@ -238,5 +238,5 @@ function exec(id) {
 }
 
 function getTeams(token) {
-	fetch(`/admin/${token}`).then(r => r.json()).then((res) => { console.log(res) });
+	fetch(`/admin/getTeamsName/${token}`).then(r => r.json()).then((res) => { console.log(res) });
 }
