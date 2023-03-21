@@ -2,6 +2,8 @@
 const express = require("express");
 const fs = require("fs");
 
+const smallestFragment = require('./smallestFragment');
+
 // Instances
 const server = express();
 
@@ -16,13 +18,15 @@ server.get("/:token/sync", async (req, res) => {
 	const frames = fs.existsSync("./bin/" + req.params.token + "/fragments.json") ? JSON.parse(fs.readFileSync("./bin/" + req.params.token + "/fragments.json")) : [];
 	const config = JSON.parse(fs.readFileSync("./bin/" + req.params.token + "/config.json"));
 
+	// After 5 minutes, generate a fake /sync response with the smallest fall fragment ! 
 	if ((Date.now() - stat.mtimeMs) > (5 * 60 * 1000)) {
-		// The match counts as ended - Lets send the client everything from the beginning
+		// The match counts as ended - Lets send the client everything from the smallest fragment
+		const fragment = smallestFragment(req.params.token);
 		res.send({
 			tick: 1,
 			rtdelay: 1,
 			rcvage: 1,
-			fragment: 0,
+			fragment: parseInt(fragment),
 			signup_fragment: 0,
 			tps: typeof config.tps !== "number" ? parseInt(config.tps) : config.tps,
 			protocol: typeof config.protocol !== "number" ? parseInt(config.protocol) : config.protocol

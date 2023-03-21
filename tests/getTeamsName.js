@@ -23,8 +23,8 @@ function getTeamsName(id) {
             }
             let jsonObject = JSON.parse(data);
 
-            jsonObject.team1 = df.teams[2].clanName;
-            jsonObject.team2 = df.teams[3].clanName;
+            jsonObject.team1 = df.teams[2].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
+            jsonObject.team2 = df.teams[3].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
 
             const updatedJson = JSON.stringify(jsonObject, null, 2);
             // parentPort.postMessage({ hello: workerData })
@@ -44,5 +44,5 @@ function getTeamsName(id) {
 // Receive the id from the main thread
 
 getTeamsName(
-  ("s85568392926464965t1679356393")
+  ("s85568392926464965t1679436471")
   )
