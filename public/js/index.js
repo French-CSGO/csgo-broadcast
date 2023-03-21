@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// Status
 			let td_Status = document.createElement("td");
-			td_Status.innerText = Date.now() - (match.lastEdit * 1000) > (60 * 1000) ? "OFFLINE" : "LIVE";
+			td_Status.innerText = Date.now() - (match.lastEdit * 1000) > (60 * 1000) ? "OFFLINE" : "🔴 LIVE";
 
 			tr.appendChild(td_Play);
 			tr.appendChild(td_Teamname);
@@ -204,7 +204,7 @@ setInterval(() => {
 		elem.innerText = moment.duration(Date.now() - (parseInt(elem.id) * 1000)).format("HH:mm:ss", { trim: false });
 
 		if (elem.parentElement.lastElementChild.id === "tableBodyLive") {
-			elem.parentElement.lastElementChild.textContent = Date.now() - (parseInt(elem.id) * 1000) > (60 * 1000) ? "OFFLINE" : "LIVE";
+			elem.parentElement.lastElementChild.textContent = Date.now() - (parseInt(elem.id) * 1000) > (60 * 1000) ? "OFFLINE" : "🔴 LIVE";
 		}
 	});
 }, 250);

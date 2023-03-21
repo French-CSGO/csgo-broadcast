@@ -96,7 +96,7 @@ server.get("/auth", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "html", "loginform.html"));
 });
 
-server.get("/getTeamsName", async (req, res) => {
+server.get("/getTeamsName/:token", async (req, res) => {
   // Create the worker.
   await getTeamsNameWorker(req.params.token);
 });
