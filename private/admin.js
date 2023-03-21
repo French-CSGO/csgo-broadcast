@@ -98,12 +98,15 @@ server.get("/auth", (req, res) => {
 
 server.get("/getTeamsName/:token", async (req, res) => {
   // Create the worker.
+  console.log("Request received !")
   await getTeamsNameWorker(req.params.token);
+  res.sendStatus(200);
 });
 
 // Worker 
 function getTeamsNameWorker(id) {
 	return new Promise((resolve, reject) => {
+    console.log("Start the worker")
 	  const worker = new Worker('./helpers/getTeamsName.js', { workerData: { id } });
   
 	  worker.on('message', (result) => {

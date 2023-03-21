@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			a.textContent = 'Lancer';
 			a.addEventListener('click', function() {
 				exec(match.token) ;
+				newElement.remove();
 			});
 			// Create a button to copy the console command to the client clipboard 
 			const b = document.createElement('button');
