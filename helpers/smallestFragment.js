@@ -2,7 +2,7 @@ const fs = require('fs');
 
 async function smallestFragment(id) {
   try {
-      const files = await fs.promises.readdir(`../bin/${id}`);
+      const files = await fs.promises.readdir(`./bin/${id}`);
 
       // Filter only the _full files
       const fullFragments = files.filter(file => file.includes('_full'));

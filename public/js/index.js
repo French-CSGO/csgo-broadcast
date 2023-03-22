@@ -1,3 +1,6 @@
+// Ajust the value with the same value TIMEONLINE in your .env file !
+const TIMEONLINE = 5;
+
 document.addEventListener("DOMContentLoaded", () => {
 	window.momentDurationFormatSetup(moment);
 
@@ -8,10 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			document.dispatchEvent(ev);
 		}, 15000);
 
-		// Ajust the value with the same value TIMEONLINE in your .env file !
-		let live = matches.filter(m => Date.now() - (m.lastEdit * 1000) < (5 * 60 * 1000));
-		let past = matches.filter(m => Date.now() - (m.lastEdit * 1000) >= (5 * 60 * 1000));
-		// 
+		let live = matches.filter(m => Date.now() - (m.lastEdit * 1000) < (TIMEONLINE * 60 * 1000));
+		let past = matches.filter(m => Date.now() - (m.lastEdit * 1000) >= (TIMEONLINE * 60 * 1000));
+		
 		live.sort((a,b) => (b.timestamp > a.timestamp) ? 1 : ((a.timestamp > b.timestamp) ? -1 : 0));
 		past.sort((a,b) => (b.timestamp > a.timestamp) ? 1 : ((a.timestamp > b.timestamp) ? -1 : 0));
 
