@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 
+require('dotenv').config()
+
 // Instances
 const server = express();
 const matches = [];
@@ -40,6 +42,6 @@ server.all("*", (req, res) => {
 });
 
 // Start listening!
-server.listen(8181, () => {
-	console.log("Listening to 8181");
+server.listen(process.env.PORT, () => {
+	console.log(`Listening to ${process.env.PORT}`);
 });

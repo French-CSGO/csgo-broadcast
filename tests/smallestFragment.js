@@ -1,24 +1,33 @@
 const fs = require('fs');
 
-function smallestFragment(id) {
-    fs.readdir(`../bin/${id}`, (err, files) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-      
+async function smallestFragment(id) {
+    try {
+        const files = await fs.promises.readdir(`../bin/${id}`);
+
         // Filter only the _full files
         const fullFragments = files.filter(file => file.includes('_full'));
-      
+        
         // Extract the numbers before the '_full' string
         const numbers = fullFragments.map(file => parseInt(file.split('_')[0]));
-      
+        
         // Sort the numbers in ascending order
         numbers.sort((a, b) => a - b);
-      
-        // Print the smallest number
-        console.log(`Smallest fragment is : ${numbers[0]}`);
-    });
+        
+        // Return the smallest number as an integer
+        return parseInt(numbers[0]);
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
 }
   
-smallestFragment("s72057594037927936t1679249470");
+async function main() {
+    try {
+      const r = await smallestFragment('s72057594037927936t1679250071');
+      console.log(`Smallest fragment as integer: ${r}`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
+  main();

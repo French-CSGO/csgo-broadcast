@@ -2,6 +2,8 @@
 const express = require("express");
 const fs = require("fs");
 
+require('dotenv').config()
+
 // Instances
 const server = express();
 
@@ -70,7 +72,7 @@ server.post("/:token/:fragmentNumber/:frameType", async (req, res) => {
 			});
 
 			// See ./match.js, line 67 : increase to 10.
-			if (json.length > 10) {
+			if (json.length > process.env.FRAG_DELAY) {
 				json.shift();
 			}
 
