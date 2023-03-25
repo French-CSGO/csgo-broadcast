@@ -33,6 +33,41 @@ button {
     background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
 }
 
+.de_vertigo {
+    background-image: url('../images/vertigo.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
+.de_ancient {
+    background-image: url('../images/ancient.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
+.de_nuke {
+    background-image: url('../images/nuke.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
+.de_overpass {
+    background-image: url('../images/overpass.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
 
 /*
 body > header {

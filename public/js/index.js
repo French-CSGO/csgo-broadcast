@@ -1,5 +1,6 @@
 // Ajust the value with the same value TIMEONLINE in your .env file !
 const TIMEONLINE = 5;
+const KEYFRAMEINTERVAL = 3;
 
 document.addEventListener("DOMContentLoaded", () => {
 	window.momentDurationFormatSetup(moment);
@@ -123,7 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
        
 		// Map
 			let td_Map = document.createElement("td");
-			td_Map.innerText = match.map;
+			td_Map.className = match.map;
+			// td_Map.innerText = match.map;
 
 		// Tickrate
 			let td_Tickrate = document.createElement("td");
@@ -171,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			let td_Timestamp = document.createElement("td");
 			td_Timestamp.innerText = moment(match.timestamp).format("Do MMMM YYYY - HH:mm:ss");
 
-			// arte
+			// Carte
 			let td_Map = document.createElement("td");
 			td_Map.className = match.map;
 			// td_Map.innerText = match.map;
@@ -203,6 +205,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				copy(match.token) ;
 			});
 
+			let td_duree = document.createElement("td");
+			td_duree.innerText = `${ parseInt( (match.FullCount * KEYFRAMEINTERVAL) /60 ) } min`;
+
 			td_Status.appendChild(a);
 			td_Status.appendChild(b);
 
@@ -213,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			tr.appendChild(td_Tickrate);
 			tr.appendChild(td_Response);
 			tr.appendChild(td_Status);
+			tr.appendChild(td_duree);
 
 			tbodyPast.appendChild(tr);
 		}
