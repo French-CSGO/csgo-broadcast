@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Actions
 			let td_Play = document.createElement("td");
 			let a = document.createElement("button");
+			a.type = "button"
+			a.className = "btn btn-primary";
 			a.textContent = 'Lancer';
 			a.addEventListener('click', function() {
 				exec(match.token) ;
@@ -85,6 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			// Create a button to copy the console command to the client clipboard 
 			const b = document.createElement('button');
+			b.type = "button"
+			b.className = "btn btn-primary";
 			b.id = match.token;
 			b.textContent = 'Commande';
 			b.addEventListener('click', function() {
@@ -98,8 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			let td_Teamname = document.createElement("td");
 			if (match.team1 === "TBD" || match.team2 === "TBD") {
 				let a = document.createElement("button");
+				a.type = "button"
+				a.className = "btn btn-primary";
 				a.textContent = 'Actualiser';
 				a.addEventListener('click', function() {
+					a.remove();
+					const p = document.createElement("p")
+					p.textContent = 'Patientez...';
+					td_Teamname.appendChild(p);
 					getTeams(match.token);
 				});
 				td_Teamname.appendChild(a);
@@ -156,13 +166,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			  }
 
 			let td_Play = document.createElement("td");
-			td_Play.innerText = match.token;
+			td_Play.innerHTML = `<span class="badge bg-secondary">${match.token}</span>`;
 
 			let td_Timestamp = document.createElement("td");
 			td_Timestamp.innerText = moment(match.timestamp).format("Do MMMM YYYY - HH:mm:ss");
 
+			// arte
 			let td_Map = document.createElement("td");
-			td_Map.innerText = match.map;
+			td_Map.className = match.map;
+			// td_Map.innerText = match.map;
 
 			let td_Tickrate = document.createElement("td");
 			td_Tickrate.innerText = typeof match.tps !== "number" ? parseInt(match.tps) : match.tps;
@@ -175,12 +187,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			let td_Status = document.createElement("td");
 			// Run with CS:GO
 			let a = document.createElement("button");
+			a.type = "button"
+			a.className = "btn btn-primary";
 			a.textContent = 'Lancer';
 			a.addEventListener('click', function() {
 				exec(match.token) ;
 			});
 			// Create a button to copy the console command to the client clipboard 
 			const b = document.createElement('button');
+			b.type = "button"
+			b.className = "btn btn-primary";
 			b.id = match.token;
 			b.textContent = 'Commande';
 			b.addEventListener('click', function() {

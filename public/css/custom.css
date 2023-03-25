@@ -1,16 +1,38 @@
-body { /* 80% here is our page width... */
-    grid-template-columns: 0fr 100% 0fr;
-    place-content: center;
-}
-
-main { /* 80% here is our page width... */
-    width: 80%;
-    margin: 0 auto;
-}
+.custom-margin {
+    padding: 3%;
+  }
 
 button {
     margin: 0.5rem;
 }
+
+.de_inferno {
+  background-image: url('../images/inferno.png');
+  height: 50px;
+  /* Optional: Configure the background image properties */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
+  background-position: center; /* Align the image in the center of the element */
+  background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
+.de_dust2 {
+    background-image: url('../images/dust2.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
+.de_mirage {
+    background-image: url('../images/mirage.png');
+    height: 50px;
+    /* Optional: Configure the background image properties */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Align the image in the center of the element */
+    background-size: cover; /* Scale the image to fill the element while maintaining its aspect ratio */
+}
+
 
 /*
 body > header {
