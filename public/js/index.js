@@ -205,8 +205,32 @@ document.addEventListener("DOMContentLoaded", () => {
 				copy(match.token) ;
 			});
 
+			// Length of the replay
 			let td_duree = document.createElement("td");
-			td_duree.innerText = `${ parseInt( (match.FullCount * KEYFRAMEINTERVAL) /60 ) } min`;
+			let minutes = document.createElement("span");
+			minutes.textContent = `${parseInt((match.FullCount * KEYFRAMEINTERVAL) / 60)} min`;
+			td_duree.appendChild(minutes);
+
+			if (match.admin) {
+				console.log("admin")
+				const d = document.createElement('button');
+				d.type = "button"
+				d.className = "btn btn-warning";
+				d.id = match.token;
+				d.textContent = '🗑️';
+				d.addEventListener('click', function() {
+					const http = new DeleteHTTP;
+					http.delete(`/admin/delete/${match.token}`)
+					// Resolving promise for response data
+						.then(data => {
+							console.log(data)
+							
+						})
+					// Resolving promise for error
+					.catch(err => console.log(err));
+				});
+				td_duree.appendChild(d);
+			} 
 
 			td_Status.appendChild(a);
 			td_Status.appendChild(b);
@@ -264,6 +288,23 @@ function exec(id) {
 	window.open(link, "_self");
 }
 
-function getTeams(token) {
-	fetch(`/admin/getTeamsName/${token}`).then(r => r.json()).then((res) => { console.log(res) });
+//
+function getTeams(id) {
+	fetch(`/admin/getTeamsName/${id}`).then(r => r.json()).then((res) => { console.log(res) });
+}
+
+// Remove old or bad replay
+class DeleteHTTP {
+    async delete(url) {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json'
+            }
+        });
+        // Awaiting for the resource to be deleted
+        const resData = 'Resource deleted...';
+        // Return response data 
+        return resData;
+    }
 }

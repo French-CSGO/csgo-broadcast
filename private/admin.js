@@ -5,14 +5,13 @@ const expressJwt = require('express-jwt');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require("path");
+const fs = require("fs");
 
 // Read secrets from the .env file
 require('dotenv').config()
 
 // Use workers to move execution of some functions 
 const { Worker } = require('worker_threads');
-
-const secret = process.env.SECRET;
 
 // Instances
 const server = express();
@@ -33,7 +32,7 @@ function generateToken(user) {
   const options = {
     expiresIn: '1h'
   };
-  return jwt.sign(payload, secret, options);
+  return jwt.sign(payload, process.env.SECRET, options);
 }
 
 // Check if JWT is valid
@@ -41,7 +40,7 @@ const authenticateJWT = (req, res, next) => {
   const token = req.cookies.token;
 
   if (token) {
-    jwt.verify(token, secret, (err, user) => {
+    jwt.verify(token, process.env.SECRET, (err, user) => {
       if (err) {
         return res.sendStatus(403);
       }
@@ -94,6 +93,19 @@ server.get('/management', authenticateJWT, (req, res) => {
 
 server.get("/auth", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "html", "loginform.html"));
+});
+
+// Delete a folder, protected by auth
+server.delete('/delete/:token', authenticateJWT, (req, res) => {
+  fs.rm("./bin/" + req.params.token, { recursive: true, force: true }, (error) => {
+    if (error) {
+      // console.error('An error occurred while deleting the folder:', error);
+      res.sendStatus(500)
+    } else {
+      // console.log('Folder deleted successfully.');
+      res.sendStatus(200)
+    }
+  });
 });
 
 server.get("/getTeamsName/:token", async (req, res) => {
