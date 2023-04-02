@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 
+require('dotenv').config()
+
 // Instances
 const server = express();
 const matches = [];
@@ -28,6 +30,7 @@ server.get(/\w+\.(css|js|png|ico|svg)$/, (req, res) => {
 });
 
 // Routes
+server.use("/admin", require("./private/admin.js"));
 server.use("/broadcast", require("./private/broadcast.js"));
 server.use("/match", require("./private/match.js"));
 server.use("/api", require("./private/api.js")(matches));
@@ -39,6 +42,6 @@ server.all("*", (req, res) => {
 });
 
 // Start listening!
-server.listen(8181, () => {
-	console.log("Listening to 8181");
+server.listen(process.env.PORT, () => {
+	console.log(`Listening to ${process.env.PORT}`);
 });

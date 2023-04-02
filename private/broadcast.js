@@ -2,6 +2,8 @@
 const express = require("express");
 const fs = require("fs");
 
+require('dotenv').config()
+
 // Instances
 const server = express();
 
@@ -25,32 +27,37 @@ server.post("/reset/:token", (req, res) => {
 	res.sendStatus(200);
 });
 
-server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
+server.post("/:token/:fragmentNumber/:frameType", async (req, res) => {
 	const pattern = /^s1t/;
 	if(!pattern.test(req.params.token))
 	{
 		if (req.params.frameType === "start") {
-			console.log("Starting broadcast with token " + req.params.token + " and fragment number " + req.params.fragmentNumber);
-			fs.mkdirSync("./bin/" + req.params.token);
-			fs.writeFileSync("./bin/" + req.params.token + "/config.json", JSON.stringify({
-				tick: req.query.tick,
-				tps: req.query.tps,
-				map: req.query.map,
-				protocol: req.query.protocol,
-				team1: "TBD",
-				team2: "TBD",
+            console.log("Starting broadcast with token " + req.params.token + " and fragment number " + req.params.fragmentNumber);
+            if (fs.existsSync("./bin/" + req.params.token) === false) {
+                fs.mkdirSync("./bin/" + req.params.token);
+            }
+            fs.writeFileSync("./bin/" + req.params.token + "/config.json", JSON.stringify({
+                tick: req.query.tick,
+                tps: req.query.tps,
+                map: req.query.map,
+                protocol: req.query.protocol,
+                team1: "TBD",
+                team2: "TBD",
 
-				token: req.params.token,
-				timestamp: Date.now(),
-				auth: req.headers["x-origin-auth"],
-				startFragment: req.params.fragment_number
-			}));
-		}
+                token: req.params.token,
+                timestamp: Date.now(),
+                auth: req.headers["x-origin-auth"],
+                startFragment: req.params.fragment_number
+            }));
+        }
 
-		if (fs.existsSync("./bin/" + req.params.token) === false) {
-			res.sendStatus(205);
-			return;
-		}
+        if (fs.existsSync("./bin/" + req.params.token) === false) {
+            const p = fs.createWriteStream("./bin/" + req.params.token + "/" + req.params.fragmentNumber + "_" + req.params.frameType);
+            fs.mkdirSync("./bin/" + req.params.token);
+            req.pipe(p);
+            res.sendStatus(205);
+            return;
+        }
 
 		const p = fs.createWriteStream("./bin/" + req.params.token + "/" + req.params.fragmentNumber + "_" + req.params.frameType);
 		req.pipe(p);
@@ -64,7 +71,8 @@ server.post("/:token/:fragmentNumber/:frameType", (req, res) => {
 				tick: req.query.tick
 			});
 
-			if (json.length > 5) {
+			// See ./match.js, line 67 : increase to 10.
+			if (json.length > process.env.FRAG_DELAY) {
 				json.shift();
 			}
 
