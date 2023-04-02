@@ -42,13 +42,13 @@ module.exports = (matchViewers) => {
 			}
 
 			if (fs.existsSync("./bin/" + match + "/config.json") === false) {
-				console.log("Match " + match + " not ready - Skipping");
+				//console.log("Match " + match + " not ready - Skipping");
 				continue;
 			}
 
 			// Here filter the display retention days (14)
 			if ((Date.now() - stat.mtimeMs) > (14 * 24 * 60 * 60 * 1000)) {
-				console.log("Match " + match + " is too old");
+				//console.log("Match " + match + " is too old");
 				continue;
 			}
 
