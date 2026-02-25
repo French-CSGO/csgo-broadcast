@@ -1,115 +1,56 @@
-// Retrieve info from the stream
-const { DemoFile } = require('demofile');
-const fs = require("fs");
-require('dotenv').config()
+const { DemoFile } = require("demofile");
+const { workerData, parentPort } = require("worker_threads");
+require("dotenv").config();
 
-const { workerData, parentPort } = require('worker_threads')
-
-function getTeamsName(id) {
-
-  const filePath = `./bin/${id}/config.json`;
-
+function debugBroadcast(id) {
   const df = new DemoFile();
 
-  //---------------------------------------------------
-  // 🟦 DEBUG : LOGGER TOUTES LES ÉMISSIONS DEMOFILE
-  //---------------------------------------------------
-  const originalEmit = df.emit.bind(df);
-  df.emit = (event, ...args) => {
-    if (!["progress"].includes(event)) {
-      console.log(`[DEMOFILE EVENT] ${event}`);
-    }
-    return originalEmit(event, ...args);
-  };
-
-  //---------------------------------------------------
-  // 🟦 DEBUG : LOGGER TOUTES LES gameEvents
-  //---------------------------------------------------
-  const originalGameEmit = df.gameEvents.emit.bind(df.gameEvents);
-  df.gameEvents.emit = (event, data) => {
-    console.log(`[GAME EVENT] ${event}`, data ? JSON.stringify(data) : "");
-    return originalGameEmit(event, data);
-  };
-
-  //---------------------------------------------------
-  // 🟦 EVENTS GÉNÉRAUX (démarrage, fin, erreurs)
-  //---------------------------------------------------
-  df.on("start", () => {
-    console.log("[DEMOFILE] Parsing démarré");
-  });
-
-  df.on("end", () => {
-    console.log("[DEMOFILE] Parsing terminé");
-  });
-
-  df.on("error", (err) => {
-    console.error("[DEMOFILE ERROR]", err);
-  });
-
-  //---------------------------------------------------
-  // 🟦 DEBUG TEAMS À CHAQUE ROUND
-  //---------------------------------------------------
-  df.gameEvents.on("round_start", () => {
-    console.log("-------------- DEBUG TEAMS --------------");
-    console.log("df.teams =", df.teams);
-
-    for (let i = 0; i < 5; i++) {
-      console.log(`team[${i}] =`, df.teams?.[i]);
-    }
-
-    const getName = t => t?.clanName || t?.name || "???";
-
-    console.log("Team0 :", getName(df.teams?.[0]));
-    console.log("Team1 :", getName(df.teams?.[1]));
-    console.log("Team2 :", getName(df.teams?.[2]));
-    console.log("Team3 :", getName(df.teams?.[3]));
-    console.log("-----------------------------------------");
-  });
-
-  //---------------------------------------------------
-  // 🟦 EXEMPLE : ICI ON NE TOUCHE PAS AU FICHIER
-  //---------------------------------------------------
-  df.gameEvents.on("weapon_fire", () => {
-    console.log("------ EVENT weapon_fire ------");
-          
-          fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) {
-              console.error(`Erreur lors de la lecture du fichier : ${err}`);
-              exit(0);
-            }
-            let jsonObject = JSON.parse(data);
-        
-            jsonObject.team1 = df.teams[2].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
-            jsonObject.team2 = df.teams[3].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
-        
-            const updatedJson = JSON.stringify(jsonObject, null, 2);
-            parentPort.postMessage({ hello: workerData })
-        
-            fs.writeFile(filePath, updatedJson, 'utf8', (err) => {
-              if (err) {
-                console.error(`Erreur lors de l'écriture du fichier : ${err}`);
-                exit(0);
-              }
-              console.log('Fichier JSON mis à jour avec succès.');
-              exit(0);
-            });
-          });
-  });
-
-  //---------------------------------------------------
-  // 🟦 LANCER LE PARSING APRÈS AVOIR MIS LES LISTENERS
-  //---------------------------------------------------
   const url = `${process.env.URL}/match/${id}`;
-  console.log("[INIT] Lancement du parsing… URL =", url);
 
-  try {
-    df.parseBroadcast(url);
-  } catch (e) {
-    console.error("[ERREUR parseBroadcast]", e);
-  }
+  console.log("==========================================");
+  console.log("[DEBUG] Lancement du broadcast");
+  console.log("[DEBUG] URL =", url);
+  console.log("==========================================");
+
+  //--------------------------------------------------------
+  // 0. LOG EVERY EVENT EMITTED BY THE DEMOFILE INSTANCE
+  //--------------------------------------------------------
+  const origEmit = df.emit;
+  df.emit = function(event, ...args) {
+    console.log(`📡 [DEMOFILE EMIT] ${event}`, args?.[0] || "");
+    return origEmit.call(this, event, ...args);
+  };
+
+  //--------------------------------------------------------
+  // 1. GAME EVENTS
+  //--------------------------------------------------------
+  const gameOrigEmit = df.gameEvents.emit;
+  df.gameEvents.emit = function(event, data) {
+    console.log(`🎮 [GAME EVENT] ${event}`, data || "");
+    return gameOrigEmit.call(this, event, data);
+  };
+
+  //--------------------------------------------------------
+  // 2. EVENTS DÉCLARÉS PAR LA DOC
+  //--------------------------------------------------------
+  df.on("start", () => console.log("🚀 [DEMOFILE] start"));
+  df.on("end", () => console.log("🏁 [DEMOFILE] end"));
+  df.on("error", (err) => console.log("❌ [DEMOFILE] error:", err));
+
+  //--------------------------------------------------------
+  // 3. Lancer le stream
+  //--------------------------------------------------------
+  df.parseBroadcast(url)
+    .then(() => {
+      console.log("🏁 [BROADCAST] parseBroadcast terminé.");
+      parentPort.postMessage({ done: true });
+    })
+    .catch((err) => {
+      console.error("❌ [BROADCAST] ERREUR parseBroadcast:", err);
+      parentPort.postMessage({ error: err.toString() });
+    });
 }
 
-
-// Receive the id from the main thread
-getTeamsName(workerData.id);
+debugBroadcast(workerData.id);
 parentPort.postMessage({ started: true });
+
