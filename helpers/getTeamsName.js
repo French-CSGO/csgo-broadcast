@@ -12,9 +12,35 @@ function getTeamsName(id) {
 
         const df = new DemoFile();
         // Start parsing the stream now that we've added our event listeners
+        console.log("[INIT] Lancement du parsing… URL =", `${process.env.URL}/match/${id}`
+                    
         df.parseBroadcast(`${process.env.URL}/match/${id}`);
 
+        df.on("start", () => {
+          console.log("[DEMOFILE] Parsing démarré");
+        });
+        
+        df.on("end", () => {
+          console.log("[DEMOFILE] Parsing terminé");
+        });
+        
         df.gameEvents.on("weapon_fire", () => {
+          console.log("------ EVENT weapon_fire ------");
+
+          // Vérifier structure teams
+          console.log("[DEBUG] df.teams =", df.teams);
+
+        // Vérifier si les indices existent
+          console.log("[DEBUG] Team index 2 =", df.teams?.[2]);
+          console.log("[DEBUG] Team index 3 =", df.teams?.[3]);
+        
+          // Essayer d’afficher leur clanName
+          console.log("[DEBUG] team2 clanName =", df.teams?.[2]?.clanName);
+          console.log("[DEBUG] team3 clanName =", df.teams?.[3]?.clanName);
+        
+          // Vérifier presence du fichier
+          console.log("[FILE] Lecture du fichier :", filePath);
+
           console.log(df.teams[2].clanName)
           console.log(df.teams[3].clanName)
         
