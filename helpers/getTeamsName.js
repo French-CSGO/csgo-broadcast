@@ -1,4 +1,4 @@
-const { DemoFile } = require("demofile");
+const { DemoFile } = require('@laihoe/demoparser2');
 const { workerData, parentPort } = require("worker_threads");
 require("dotenv").config();
 
