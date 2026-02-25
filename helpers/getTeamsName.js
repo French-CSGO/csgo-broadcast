@@ -1,56 +1,51 @@
-const { DemoFile } = require("demofile");
-const { workerData, parentPort } = require("worker_threads");
-require("dotenv").config();
+// Retrieve info from the stream  
+const { DemoFile } = require('demofile');
+const { exit } = require('process');
+const fs = require("fs");
+require('dotenv').config()
 
-function debugBroadcast(id) {
-  const df = new DemoFile();
+const { workerData, parentPort } = require('worker_threads')
 
-  const url = `${process.env.URL}/match/${id}`;
+function getTeamsName(id) {
 
-  console.log("==========================================");
-  console.log("[DEBUG] Lancement du broadcast");
-  console.log("[DEBUG] URL =", url);
-  console.log("==========================================");
+        const filePath = `./bin/${id}/config.json`;
 
-  //--------------------------------------------------------
-  // 0. LOG EVERY EVENT EMITTED BY THE DEMOFILE INSTANCE
-  //--------------------------------------------------------
-  const origEmit = df.emit;
-  df.emit = function(event, ...args) {
-    console.log(`📡 [DEMOFILE EMIT] ${event}`, args?.[0] || "");
-    return origEmit.call(this, event, ...args);
-  };
+        const df = new DemoFile();
+        // Start parsing the stream now that we've added our event listeners
+        df.parseBroadcast(`${process.env.URL}/match/${id}`);
 
-  //--------------------------------------------------------
-  // 1. GAME EVENTS
-  //--------------------------------------------------------
-  const gameOrigEmit = df.gameEvents.emit;
-  df.gameEvents.emit = function(event, data) {
-    console.log(`🎮 [GAME EVENT] ${event}`, data || "");
-    return gameOrigEmit.call(this, event, data);
-  };
+        df.gameEvents.on("weapon_fire", () => {
+          console.log(df.teams[2].clanName)
+          console.log(df.teams[3].clanName)
+        
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+              console.error(`Erreur lors de la lecture du fichier : ${err}`);
+              exit(0);
+            }
+            let jsonObject = JSON.parse(data);
 
-  //--------------------------------------------------------
-  // 2. EVENTS DÉCLARÉS PAR LA DOC
-  //--------------------------------------------------------
-  df.on("start", () => console.log("🚀 [DEMOFILE] start"));
-  df.on("end", () => console.log("🏁 [DEMOFILE] end"));
-  df.on("error", (err) => console.log("❌ [DEMOFILE] error:", err));
+            jsonObject.team1 = df.teams[2].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
+            jsonObject.team2 = df.teams[3].clanName.replace(/\[(NOT READY|READY)\]/g, "").trim();
 
-  //--------------------------------------------------------
-  // 3. Lancer le stream
-  //--------------------------------------------------------
-  df.parseBroadcast(url)
-    .then(() => {
-      console.log("🏁 [BROADCAST] parseBroadcast terminé.");
-      parentPort.postMessage({ done: true });
-    })
-    .catch((err) => {
-      console.error("❌ [BROADCAST] ERREUR parseBroadcast:", err);
-      parentPort.postMessage({ error: err.toString() });
-    });
+            const updatedJson = JSON.stringify(jsonObject, null, 2);
+            parentPort.postMessage({ hello: workerData })
+
+            fs.writeFile(filePath, updatedJson, 'utf8', (err) => {
+              if (err) {
+                console.error(`Erreur lors de l'écriture du fichier : ${err}`);
+                exit(0);
+              }
+              console.log('Fichier JSON mis à jour avec succès.');
+              exit(0);
+            });
+          });
+        });
 }
 
-debugBroadcast(workerData.id);
-parentPort.postMessage({ started: true });
-
+// Receive the id from the main thread
+parentPort.postMessage(
+  getTeamsName(
+    workerData.id
+  )
+);
