@@ -1,5 +1,5 @@
 // Retrieve info from the stream  
-const { DemoFile } = require('demofile');
+const { DemoFile } = require('@laihoe/demoparser2');
 const { exit } = require('process');
 const fs = require("fs");
 require('dotenv').config()
