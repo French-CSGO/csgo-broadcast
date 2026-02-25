@@ -12,7 +12,7 @@ function getTeamsName(id) {
 
         const df = new DemoFile();
         // Start parsing the stream now that we've added our event listeners
-        console.log("[INIT] Lancement du parsing… URL =", `${process.env.URL}/match/${id}`
+        console.log("[INIT] Lancement du parsing… URL =", `${process.env.URL}/match/${id}`);
                     
         df.parseBroadcast(`${process.env.URL}/match/${id}`);
 
