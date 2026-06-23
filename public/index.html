@@ -25,7 +25,6 @@
     .section-title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
 
-    /* Card */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: visible; position: relative; transition: border-color .15s, transform .15s; }
     .card:hover { border-color: var(--accent); transform: translateY(-2px); z-index: 50; }
     .card-inner { border-radius: var(--radius); overflow: hidden; }
@@ -49,16 +48,15 @@
 
     .center-col { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex-shrink: 0; padding: 0 .25rem; }
     .bo-label { font-size: .65rem; color: var(--muted); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-    .vs { font-size: .75rem; color: var(--muted); }
 
-    .card-footer { padding: .75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; align-items: center; }
-    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; }
+    .card-footer { padding: .75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; white-space: nowrap; }
     .btn:hover { opacity: .85; }
     .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-copied { background: var(--live); color: #fff; }
     .meta { margin-left: auto; font-size: .72rem; color: var(--muted); }
 
-    /* Tooltip hover */
     .card-tooltip {
       display: none;
       position: absolute;
@@ -117,23 +115,25 @@ function timeAgo(ts) {
   if (s < 3600) return `${Math.floor(s/60)}min`;
   return `${Math.floor(s/3600)}h`;
 }
-
 function mapLabel(map) {
   if (!map) return '—';
   return map.replace('de_','').replace('cs_','').toUpperCase();
 }
-
 function logoEl(logo, name) {
   if (logo) return `<img src="${logo}" alt="${name}" onerror="this.replaceWith(document.createTextNode('🏳️'))" />`;
   return name ? name.charAt(0).toUpperCase() : '?';
 }
 
-function copyPlaycast(slug, sessionToken, btn) {
-  const url = `${PUBLIC_URL}/${slug}/${sessionToken}`;
+function copyPlaycast(url, btn, label) {
   navigator.clipboard.writeText(`playcast "${url}"`).then(() => {
-    btn.classList.remove('btn-primary'); btn.classList.add('btn-copied');
+    const orig = btn.innerHTML;
+    btn.classList.add('btn-copied'); btn.classList.remove('btn-primary', 'btn-secondary');
     btn.textContent = '✓ Copié';
-    setTimeout(() => { btn.classList.remove('btn-copied'); btn.classList.add('btn-primary'); btn.textContent = '▶ Regarder'; }, 1800);
+    setTimeout(() => {
+      btn.classList.remove('btn-copied');
+      if (label === 'live') btn.classList.add('btn-primary'); else btn.classList.add('btn-secondary');
+      btn.innerHTML = orig;
+    }, 1800);
   });
 }
 
@@ -142,16 +142,9 @@ function renderVetos(vetos) {
   const icons = { pick: '✅', ban: '❌', remove: '❌', default: '📌' };
   const items = vetos.map(v => {
     const icon = icons[v.pick_or_veto?.toLowerCase()] || icons.default;
-    return `<div class="veto-item">
-      <span class="veto-icon">${icon}</span>
-      <span class="veto-map">${mapLabel(v.map)}</span>
-      <span class="veto-team">${v.team_name || ''}</span>
-    </div>`;
+    return `<div class="veto-item"><span class="veto-icon">${icon}</span><span class="veto-map">${mapLabel(v.map)}</span><span class="veto-team">${v.team_name || ''}</span></div>`;
   }).join('');
-  return `<div class="tooltip-section">
-    <div class="tooltip-title">Veto</div>
-    <div class="veto-list">${items}</div>
-  </div>`;
+  return `<div class="tooltip-section"><div class="tooltip-title">Veto</div><div class="veto-list">${items}</div></div>`;
 }
 
 function renderMapScores(maps) {
@@ -161,35 +154,22 @@ function renderMapScores(maps) {
     const s1 = m.team1_score ?? 0, s2 = m.team2_score ?? 0;
     let scoreClass = 'live', scoreStr = `${s1} : ${s2}`;
     if (finished) {
-      if (s1 > s2) { scoreClass = 'won'; }
-      else if (s2 > s1) { scoreClass = 'lost'; }
-      else scoreClass = '';
+      scoreClass = s1 > s2 ? 'won' : s2 > s1 ? 'lost' : '';
       scoreStr = `${s1} — ${s2}`;
     }
-    return `<div class="map-item">
-      <span class="map-num">${i+1}</span>
-      <span class="map-name-tt">${mapLabel(m.map_name)}</span>
-      <span class="map-score ${scoreClass}">${scoreStr}${!finished ? ' 🔴' : ''}</span>
-    </div>`;
+    return `<div class="map-item"><span class="map-num">${i+1}</span><span class="map-name-tt">${mapLabel(m.map_name)}</span><span class="map-score ${scoreClass}">${scoreStr}${!finished ? ' 🔴' : ''}</span></div>`;
   }).join('');
-  return `<div class="tooltip-section">
-    <div class="tooltip-title">Cartes</div>
-    <div class="map-list">${items}</div>
-  </div>`;
+  return `<div class="tooltip-section"><div class="tooltip-title">Cartes</div><div class="map-list">${items}</div></div>`;
 }
 
 function getScores(m) {
-  const bo1 = m.maxMaps === 1;
-  if (bo1) {
-    // current map score from maps[]
+  if (m.maxMaps === 1) {
     const cur = m.maps && m.maps[0];
     return { s1: cur ? (cur.team1_score ?? 0) : 0, s2: cur ? (cur.team2_score ?? 0) : 0 };
   }
   return { s1: m.team1SeriesScore ?? 0, s2: m.team2SeriesScore ?? 0 };
 }
-
 function scoreClass(s1, s2, side) {
-  // only color when match is over or series decided
   if (s1 === s2) return '';
   if (side === 'left') return s1 > s2 ? 'winner' : 'loser';
   return s2 > s1 ? 'winner' : 'loser';
@@ -205,11 +185,17 @@ function renderCard(m) {
   const sc1 = scoreClass(s1, s2, 'left');
   const sc2 = scoreClass(s1, s2, 'right');
 
+  const liveUrl = `${PUBLIC_URL}/${m.slug}/${m.sessionToken}`;
+  const replayUrl = `${PUBLIC_URL}/replay/${m.slug}/${m.sessionToken}`;
+
+  // For live matches show two buttons; for replays show one
+  const buttons = m.live
+    ? `<button class="btn btn-primary" onclick="copyPlaycast('${liveUrl}',this,'live')">&#9654; En cours</button>
+       <button class="btn btn-secondary" onclick="copyPlaycast('${replayUrl}',this,'start')">&#8634; Début</button>`
+    : `<button class="btn btn-primary" onclick="copyPlaycast('${liveUrl}',this,'live')">&#9654; Regarder</button>`;
+
   const hasTooltip = (m.vetos && m.vetos.length) || (m.maps && m.maps.length);
-  const tooltip = hasTooltip ? `<div class="card-tooltip">
-    ${renderVetos(m.vetos)}
-    ${renderMapScores(m.maps)}
-  </div>` : '';
+  const tooltip = hasTooltip ? `<div class="card-tooltip">${renderVetos(m.vetos)}${renderMapScores(m.maps)}</div>` : '';
 
   return `
   <div class="card">
@@ -225,9 +211,7 @@ function renderCard(m) {
             <div class="team-name">${m.team1 || 'TBD'}</div>
             <div class="team-score ${sc1}">${s1}</div>
           </div>
-          <div class="center-col">
-            <div class="bo-label">${boLabel}</div>
-          </div>
+          <div class="center-col"><div class="bo-label">${boLabel}</div></div>
           <div class="team">
             <div class="team-logo">${logoEl(m.team2Logo, m.team2)}</div>
             <div class="team-name">${m.team2 || 'TBD'}</div>
@@ -236,7 +220,7 @@ function renderCard(m) {
         </div>
       </div>
       <div class="card-footer">
-        <button class="btn btn-primary" onclick="copyPlaycast('${m.slug}','${m.sessionToken}',this)">▶ Regarder</button>
+        ${buttons}
         <span class="meta">il y a ${timeAgo(m.lastActivity)}</span>
       </div>
     </div>

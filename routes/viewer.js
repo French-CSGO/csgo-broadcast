@@ -21,10 +21,56 @@ function toInt(v) {
   return typeof v === 'number' ? v : parseInt(v);
 }
 
-// CS2 viewers demandent : GET /:slug/:sessionToken/sync
+function resolveSession(slug, sessionToken) {
+  return path.join(BIN_DIR, slug, sessionToken);
+}
+
+// --- SYNC from-start (replay prefix) ---
+router.get('/replay/:slug/:sessionToken/sync', (req, res) => {
+  const { slug, sessionToken } = req.params;
+  const sessionDir = resolveSession(slug, sessionToken);
+  const configFile = path.join(sessionDir, 'config.json');
+
+  if (!fs.existsSync(sessionDir) || !fs.existsSync(configFile)) {
+    log.debug('viewer', 'Sync replay 404 — session inconnue', { slug, sessionToken, ip: req.ip });
+    return res.sendStatus(404);
+  }
+
+  const config = JSON.parse(fs.readFileSync(configFile));
+  const startFrag = smallestFullFragment(sessionDir);
+
+  log.debug('viewer', 'Sync depuis le début', { slug, sessionToken, ip: req.ip, start_fragment: startFrag });
+  return res.json({
+    tick: 1, rtdelay: 1, rcvage: 1,
+    fragment: startFrag,
+    signup_fragment: 0,
+    tps: toInt(config.tps),
+    protocol: toInt(config.protocol),
+  });
+});
+
+// --- Fragments via replay prefix ---
+router.get('/replay/:slug/:sessionToken/:fragmentNumber/:frameType', (req, res) => {
+  const { slug, sessionToken, fragmentNumber, frameType } = req.params;
+  const file = path.join(BIN_DIR, slug, sessionToken, `${fragmentNumber}_${frameType}`);
+
+  if (!fs.existsSync(file)) {
+    log.debug('viewer', 'Fragment replay 404', { slug, sessionToken, fragment: fragmentNumber, type: frameType, ip: req.ip });
+    return res.sendStatus(404);
+  }
+
+  if (frameType === 'start') {
+    log.info('viewer', 'Lecture depuis le début démarrée', { slug, sessionToken, fragment: fragmentNumber, ip: req.ip });
+  }
+
+  res.setHeader('Content-Type', 'application/octet-stream');
+  fs.createReadStream(file).pipe(res);
+});
+
+// --- SYNC live ---
 router.get('/:slug/:sessionToken/sync', (req, res) => {
   const { slug, sessionToken } = req.params;
-  const sessionDir = path.join(BIN_DIR, slug, sessionToken);
+  const sessionDir = resolveSession(slug, sessionToken);
   const configFile = path.join(sessionDir, 'config.json');
 
   if (!fs.existsSync(sessionDir) || !fs.existsSync(configFile)) {
@@ -78,7 +124,7 @@ router.get('/:slug/:sessionToken/sync', (req, res) => {
   });
 });
 
-// CS2 viewers demandent : GET /:slug/:sessionToken/:fragmentNumber/:frameType
+// --- Fragments live ---
 router.get('/:slug/:sessionToken/:fragmentNumber/:frameType', (req, res) => {
   const { slug, sessionToken, fragmentNumber, frameType } = req.params;
   const file = path.join(BIN_DIR, slug, sessionToken, `${fragmentNumber}_${frameType}`);
