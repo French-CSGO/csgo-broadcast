@@ -1,50 +1,83 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const { findMatchBySlug } = require("../helpers/get5");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const { findMatchBySlug } = require('../helpers/get5');
+const log = require('../helpers/logger');
 
 const router = express.Router();
-const BIN_DIR = path.join(__dirname, "..", "bin");
+const BIN_DIR = path.join(__dirname, '..', 'bin');
 const fragDelay = () => parseInt(process.env.FRAG_DELAY) || 10;
 
 function authOk(req, res) {
-  if (req.headers["x-origin-auth"] !== process.env.BROADCAST_AUTH) {
+  const provided = req.headers['x-origin-auth'];
+  if (provided !== process.env.BROADCAST_AUTH) {
+    log.warn('ingest', 'Auth refusée', {
+      ip: req.ip,
+      path: req.path,
+      auth_provided: provided ? `${provided.slice(0, 4)}…` : '(vide)',
+    });
     res.sendStatus(403);
     return false;
   }
   return true;
 }
 
-router.post("/reset/:slug", (req, res) => {
+router.post('/reset/:slug', (req, res) => {
   if (!authOk(req, res)) return;
-  const dir = path.join(BIN_DIR, req.params.slug);
-  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+  const { slug } = req.params;
+  const dir = path.join(BIN_DIR, slug);
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    log.info('ingest', 'Broadcast réinitialisé', { slug });
+  } else {
+    log.warn('ingest', 'Reset demandé sur slot inexistant', { slug });
+  }
   res.sendStatus(200);
 });
 
-router.post("/:slug/:fragmentNumber/:frameType", async (req, res) => {
+router.post('/:slug/:fragmentNumber/:frameType', async (req, res) => {
   if (!authOk(req, res)) return;
   const { slug, fragmentNumber, frameType } = req.params;
   const dir = path.join(BIN_DIR, slug);
 
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    log.debug('ingest', 'Dossier créé', { slug });
+  }
 
-  if (frameType === "start") {
-    let team1 = "TBD", team2 = "TBD", matchId = null, team1Logo = null, team2Logo = null;
+  if (frameType === 'start') {
+    log.info('ingest', 'Fragment START reçu — lookup get5…', {
+      slug,
+      fragment: fragmentNumber,
+      map: req.query.map,
+      tps: req.query.tps,
+      protocol: req.query.protocol,
+    });
+
+    let team1 = 'TBD', team2 = 'TBD', matchId = null, team1Logo = null, team2Logo = null;
     try {
       const match = await findMatchBySlug(slug);
       if (match) {
-        team1 = match.team1_name || "TBD";
-        team2 = match.team2_name || "TBD";
+        team1 = match.team1_name || 'TBD';
+        team2 = match.team2_name || 'TBD';
         team1Logo = match.team1_logo || null;
         team2Logo = match.team2_logo || null;
         matchId = match.match_id;
+        log.info('ingest', 'Match get5 trouvé', {
+          slug,
+          match_id: matchId,
+          server_name: match.server_name,
+          team1,
+          team2,
+        });
+      } else {
+        log.warn('ingest', 'Aucun match actif trouvé dans get5 pour ce serveur', { slug });
       }
     } catch (e) {
-      console.error(`[get5] lookup failed for ${slug}:`, e.message);
+      log.error('ingest', 'Erreur lookup get5', { slug, error: e.message });
     }
 
-    fs.writeFileSync(path.join(dir, "config.json"), JSON.stringify({
+    fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify({
       slug, matchId,
       team1, team1Logo,
       team2, team2Logo,
@@ -55,19 +88,27 @@ router.post("/:slug/:fragmentNumber/:frameType", async (req, res) => {
       startFragment: fragmentNumber,
       timestamp: Date.now(),
     }));
-
-    console.log(`[ingest] started ${slug} → match #${matchId} | ${team1} vs ${team2} | map=${req.query.map}`);
   }
 
   const dest = path.join(dir, `${fragmentNumber}_${frameType}`);
   req.pipe(fs.createWriteStream(dest));
 
-  if (frameType === "full") {
-    const fragFile = path.join(dir, "fragments.json");
+  if (frameType === 'full') {
+    const fragFile = path.join(dir, 'fragments.json');
     const frags = fs.existsSync(fragFile) ? JSON.parse(fs.readFileSync(fragFile)) : [];
     frags.push({ fragmentNumber, tick: req.query.tick });
-    if (frags.length > fragDelay()) frags.shift();
+    const dropped = frags.length > fragDelay() ? frags.shift() : null;
     fs.writeFileSync(fragFile, JSON.stringify(frags));
+    log.debug('ingest', 'Fragment FULL enregistré', {
+      slug,
+      fragment: fragmentNumber,
+      tick: req.query.tick,
+      buffered: frags.length,
+      delay: fragDelay(),
+      dropped_fragment: dropped ? dropped.fragmentNumber : null,
+    });
+  } else if (frameType !== 'start') {
+    log.debug('ingest', `Fragment ${frameType} enregistré`, { slug, fragment: fragmentNumber });
   }
 
   res.sendStatus(200);
