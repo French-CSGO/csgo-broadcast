@@ -1,8 +1,7 @@
-FROM node:18
+FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
-RUN npm install -g nodemon
+RUN npm install --omit=dev
 COPY . .
-# EXPOSE 8181
-# CMD ["npm", "run", "start:dev"]
+EXPOSE 8181
+CMD ["node", "index.js"]

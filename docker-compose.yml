@@ -2,20 +2,16 @@ version: '3'
 services:
   app:
     container_name: csgobroadcast
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/french-csgo/csgo-broadcast:latest
     volumes:
-      - .:/app
-      - /app/node_modules
-    # restart: always
+      - bin_data:/app/bin
+    restart: always
     ports:
       - '8181:8181'
-    environment:
-      - NODE_ENV=development
+    env_file:
+      - .env
     networks:
       - app-network
-    command: npm run preprod
 
   caddy:
     image: caddy
@@ -26,7 +22,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    # restart: always
+    restart: always
     depends_on:
       - app
     networks:
@@ -37,5 +33,6 @@ networks:
     driver: bridge
 
 volumes:
+  bin_data:
   caddy_data:
   caddy_config:
