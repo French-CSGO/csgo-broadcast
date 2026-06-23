@@ -39,14 +39,17 @@
 
     .card-body { padding: 1.25rem 1rem; }
     .matchup { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-    .team { display: flex; flex-direction: column; align-items: center; gap: .4rem; flex: 1; min-width: 0; }
+    .team { display: flex; flex-direction: column; align-items: center; gap: .3rem; flex: 1; min-width: 0; }
     .team-logo { width: 44px; height: 44px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; overflow: hidden; flex-shrink: 0; }
     .team-logo img { width: 100%; height: 100%; object-fit: contain; }
     .team-name { font-size: .82rem; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .team-score { font-size: 1.4rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+    .team-score.winner { color: var(--live); }
+    .team-score.loser { color: #ef4444; }
 
-    .score-center { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex-shrink: 0; }
-    .series-score { font-size: 1.3rem; font-weight: 800; letter-spacing: .05em; color: var(--text); }
+    .center-col { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex-shrink: 0; padding: 0 .25rem; }
     .bo-label { font-size: .65rem; color: var(--muted); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .vs { font-size: .75rem; color: var(--muted); }
 
     .card-footer { padding: .75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; align-items: center; }
     .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; }
@@ -84,7 +87,7 @@
     .map-list { display: flex; flex-direction: column; gap: .3rem; }
     .map-item { display: flex; align-items: center; gap: .5rem; }
     .map-num { font-size: .65rem; color: var(--muted); width: 14px; flex-shrink: 0; }
-    .map-name { font-weight: 600; flex: 1; }
+    .map-name-tt { font-weight: 600; flex: 1; }
     .map-score { font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
     .map-score.won { color: var(--live); }
     .map-score.lost { color: #ef4444; }
@@ -151,7 +154,7 @@ function renderVetos(vetos) {
   </div>`;
 }
 
-function renderMapScores(maps, team1, team2) {
+function renderMapScores(maps) {
   if (!maps || !maps.length) return '';
   const items = maps.map((m, i) => {
     const finished = !!m.end_time;
@@ -165,7 +168,7 @@ function renderMapScores(maps, team1, team2) {
     }
     return `<div class="map-item">
       <span class="map-num">${i+1}</span>
-      <span class="map-name">${mapLabel(m.map_name)}</span>
+      <span class="map-name-tt">${mapLabel(m.map_name)}</span>
       <span class="map-score ${scoreClass}">${scoreStr}${!finished ? ' 🔴' : ''}</span>
     </div>`;
   }).join('');
@@ -175,25 +178,37 @@ function renderMapScores(maps, team1, team2) {
   </div>`;
 }
 
+function getScores(m) {
+  const bo1 = m.maxMaps === 1;
+  if (bo1) {
+    // current map score from maps[]
+    const cur = m.maps && m.maps[0];
+    return { s1: cur ? (cur.team1_score ?? 0) : 0, s2: cur ? (cur.team2_score ?? 0) : 0 };
+  }
+  return { s1: m.team1SeriesScore ?? 0, s2: m.team2SeriesScore ?? 0 };
+}
+
+function scoreClass(s1, s2, side) {
+  // only color when match is over or series decided
+  if (s1 === s2) return '';
+  if (side === 'left') return s1 > s2 ? 'winner' : 'loser';
+  return s2 > s1 ? 'winner' : 'loser';
+}
+
 function renderCard(m) {
   const badge = m.live
     ? `<span class="badge badge-live">Live</span>`
     : `<span class="badge badge-replay">Replay</span>`;
 
   const boLabel = m.maxMaps > 1 ? `BO${m.maxMaps}` : 'BO1';
-  const showSeries = m.maxMaps > 1;
-
-  const scoreCenter = showSeries
-    ? `<div class="score-center">
-        <div class="series-score">${m.team1SeriesScore} — ${m.team2SeriesScore}</div>
-        <div class="bo-label">${boLabel}</div>
-      </div>`
-    : `<div class="score-center"><div class="bo-label">${boLabel}</div></div>`;
+  const { s1, s2 } = getScores(m);
+  const sc1 = scoreClass(s1, s2, 'left');
+  const sc2 = scoreClass(s1, s2, 'right');
 
   const hasTooltip = (m.vetos && m.vetos.length) || (m.maps && m.maps.length);
   const tooltip = hasTooltip ? `<div class="card-tooltip">
     ${renderVetos(m.vetos)}
-    ${renderMapScores(m.maps, m.team1, m.team2)}
+    ${renderMapScores(m.maps)}
   </div>` : '';
 
   return `
@@ -208,11 +223,15 @@ function renderCard(m) {
           <div class="team">
             <div class="team-logo">${logoEl(m.team1Logo, m.team1)}</div>
             <div class="team-name">${m.team1 || 'TBD'}</div>
+            <div class="team-score ${sc1}">${s1}</div>
           </div>
-          ${scoreCenter}
+          <div class="center-col">
+            <div class="bo-label">${boLabel}</div>
+          </div>
           <div class="team">
             <div class="team-logo">${logoEl(m.team2Logo, m.team2)}</div>
             <div class="team-name">${m.team2 || 'TBD'}</div>
+            <div class="team-score ${sc2}">${s2}</div>
           </div>
         </div>
       </div>

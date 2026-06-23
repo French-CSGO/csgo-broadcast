@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — GOTV Broadcast</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f14; --surface: #161b22; --surface2: #1f2937;
+      --border: #2d3748; --accent: #f97316;
+      --live: #22c55e; --replay: #6366f1; --danger: #ef4444;
+      --text: #f1f5f9; --muted: #64748b; --radius: 10px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; gap: 1rem; height: 60px; background: var(--bg); }
+    .logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: .05em; text-transform: uppercase; }
+    .logo span { color: var(--text); }
+    .back { margin-left: auto; font-size: .82rem; color: var(--muted); text-decoration: none; }
+    .back:hover { color: var(--text); }
+
+    main { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Auth */
+    .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 360px; margin: 4rem auto; }
+    .auth-box h2 { font-size: 1rem; margin-bottom: 1.2rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .field { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
+    .field label { font-size: .78rem; color: var(--muted); }
+    .field input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: .5rem .75rem; color: var(--text); font-size: .9rem; outline: none; }
+    .field input:focus { border-color: var(--accent); }
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1rem; border-radius: 6px; font-size: .82rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; justify-content: center; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-sm { padding: .3rem .7rem; font-size: .76rem; }
+    .err { color: var(--danger); font-size: .8rem; margin-top: .5rem; }
+
+    /* Table */
+    .section-title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    th { text-align: left; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: .4rem .75rem; border-bottom: 1px solid var(--border); }
+    td { padding: .65rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background: var(--surface2); }
+    .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .15rem .45rem; border-radius: 4px; }
+    .badge-live { background: rgba(34,197,94,.15); color: var(--live); border: 1px solid rgba(34,197,94,.3); }
+    .badge-replay { background: rgba(99,102,241,.15); color: var(--replay); border: 1px solid rgba(99,102,241,.3); }
+    .mono { font-family: monospace; font-size: .78rem; color: var(--muted); }
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+    #status-msg { height: 1.2rem; font-size: .8rem; color: var(--live); margin-bottom: .75rem; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">GOTV <span>Admin</span></div>
+  <a class="back" href="/">← Retour</a>
+</header>
+<main>
+  <!-- Auth gate -->
+  <div id="auth-view">
+    <div class="auth-box">
+      <h2>Clé admin</h2>
+      <div class="field">
+        <label>ADMIN_KEY</label>
+        <input type="password" id="key-input" placeholder="Entrez la clé…" />
+      </div>
+      <button class="btn btn-primary" onclick="login()">Connexion</button>
+      <div class="err" id="auth-err"></div>
+    </div>
+  </div>
+
+  <!-- Admin panel -->
+  <div id="admin-view" style="display:none">
+    <div id="status-msg"></div>
+    <div class="section-title">Sessions de broadcast</div>
+    <div id="table-wrap"></div>
+  </div>
+</main>
+<script>
+let adminKey = '';
+
+function mapLabel(map) {
+  if (!map) return '—';
+  return map.replace('de_','').replace('cs_','').toUpperCase();
+}
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts * 1000) / 1000);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}min`;
+  return `${Math.floor(s/3600)}h`;
+}
+
+async function login() {
+  const key = document.getElementById('key-input').value.trim();
+  if (!key) return;
+  // try a fetch to verify key
+  const res = await fetch('/api/matches', { headers: { 'x-admin-key': key } });
+  if (!res.ok) { document.getElementById('auth-err').textContent = 'Erreur réseau'; return; }
+  adminKey = key;
+  document.getElementById('auth-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = '';
+  loadMatches();
+}
+
+document.getElementById('key-input').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+async function loadMatches() {
+  const res = await fetch('/api/matches');
+  const matches = await res.json();
+  const wrap = document.getElementById('table-wrap');
+  if (matches.length === 0) {
+    wrap.innerHTML = '<div class="empty">Aucune session enregistrée.</div>';
+    return;
+  }
+  const rows = matches.map(m => {
+    const badge = m.live
+      ? `<span class="badge badge-live">Live</span>`
+      : `<span class="badge badge-replay">Replay</span>`;
+    return `<tr>
+      <td>${badge}</td>
+      <td>${m.slug}</td>
+      <td class="mono">${m.sessionToken}</td>
+      <td>${m.team1 || 'TBD'} vs ${m.team2 || 'TBD'}</td>
+      <td>${mapLabel(m.map)}</td>
+      <td>${timeAgo(m.lastActivity)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteSession('${m.slug}','${m.sessionToken}',this)">Supprimer</button></td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Statut</th><th>Slug</th><th>Token</th><th>Match</th><th>Map</th><th>Activité</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+async function deleteSession(slug, sessionToken, btn) {
+  if (!confirm(`Supprimer la session ${slug}/${sessionToken} ?`)) return;
+  btn.disabled = true;
+  btn.textContent = '…';
+  const res = await fetch(`/api/matches/${slug}/${sessionToken}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-key': adminKey },
+  });
+  if (res.ok) {
+    const msg = document.getElementById('status-msg');
+    msg.textContent = `✓ Session ${sessionToken} supprimée.`;
+    setTimeout(() => { msg.textContent = ''; }, 3000);
+    loadMatches();
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Supprimer';
+    alert('Erreur: ' + res.status);
+  }
+}
+
+setInterval(() => { if (adminKey) loadMatches(); }, 15000);
+</script>
+</body>
+</html>

@@ -70,4 +70,32 @@ router.get('/matches', async (req, res) => {
   res.json(result);
 });
 
+// DELETE /api/matches/:slug/:sessionToken — admin only
+router.delete('/matches/:slug/:sessionToken', (req, res) => {
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || req.headers['x-admin-key'] !== adminKey) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { slug, sessionToken } = req.params;
+  // basic path traversal guard
+  if (slug.includes('..') || sessionToken.includes('..')) {
+    return res.status(400).json({ error: 'Invalid params' });
+  }
+
+  const sessionDir = path.join(BIN_DIR, slug, sessionToken);
+  if (!fs.existsSync(sessionDir)) return res.status(404).json({ error: 'Not found' });
+
+  fs.rmSync(sessionDir, { recursive: true, force: true });
+
+  // remove slug dir if now empty
+  const slugDir = path.join(BIN_DIR, slug);
+  if (fs.existsSync(slugDir) && fs.readdirSync(slugDir).length === 0) {
+    fs.rmdirSync(slugDir);
+  }
+
+  log.info('api', 'Replay supprimé', { slug, sessionToken, ip: req.ip });
+  res.json({ ok: true });
+});
+
 module.exports = router;
