@@ -19,12 +19,12 @@ async function findMatchBySlug(slug) {
     `SELECT m.id AS match_id,
             t1.name AS team1_name, t1.logo AS team1_logo,
             t2.name AS team2_name, t2.logo AS team2_logo,
-            s.display_name AS server_name
+            gs.display_name AS server_name
      FROM \`match\` m
-     JOIN server s ON s.id = m.server_id
+     JOIN game_server gs ON gs.id = m.server_id
      LEFT JOIN team t1 ON t1.id = m.team1_id
      LEFT JOIN team t2 ON t2.id = m.team2_id
-     WHERE s.display_name = ?
+     WHERE gs.display_name = ?
        AND m.cancelled = 0
        AND m.end_time IS NULL
      ORDER BY m.id DESC
