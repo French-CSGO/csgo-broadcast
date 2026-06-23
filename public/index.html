@@ -6,33 +6,15 @@
   <title>GOTV Broadcast</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0d0f14;
-      --surface: #161b22;
-      --surface2: #1f2937;
-      --border: #2d3748;
-      --accent: #f97316;
-      --live: #22c55e;
-      --replay: #6366f1;
-      --text: #f1f5f9;
-      --muted: #64748b;
-      --radius: 12px;
+      --bg: #0d0f14; --surface: #161b22; --surface2: #1f2937;
+      --border: #2d3748; --accent: #f97316;
+      --live: #22c55e; --replay: #6366f1;
+      --text: #f1f5f9; --muted: #64748b; --radius: 12px;
     }
-
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      height: 60px;
-      position: sticky; top: 0;
-      background: var(--bg);
-      z-index: 10;
-    }
+    header { border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; gap: 1rem; height: 60px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
     .logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: .05em; text-transform: uppercase; }
     .logo span { color: var(--text); }
     .live-count { margin-left: auto; display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--muted); }
@@ -41,34 +23,72 @@
 
     main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
     .section-title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
 
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color .15s, transform .15s; }
-    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    /* Card */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: visible; position: relative; transition: border-color .15s, transform .15s; }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); z-index: 50; }
+    .card-inner { border-radius: var(--radius); overflow: hidden; }
 
     .card-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
-
     .badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .2rem .5rem; border-radius: 4px; }
     .badge-live { background: rgba(34,197,94,.15); color: var(--live); border: 1px solid rgba(34,197,94,.3); }
     .badge-live::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--live); animation:pulse 1.8s infinite; display:inline-block; }
     .badge-replay { background: rgba(99,102,241,.15); color: var(--replay); border: 1px solid rgba(99,102,241,.3); }
-
     .map-label { font-size: .72rem; color: var(--muted); font-weight: 500; }
+
     .card-body { padding: 1.25rem 1rem; }
     .matchup { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
     .team { display: flex; flex-direction: column; align-items: center; gap: .4rem; flex: 1; min-width: 0; }
     .team-logo { width: 44px; height: 44px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; overflow: hidden; flex-shrink: 0; }
     .team-logo img { width: 100%; height: 100%; object-fit: contain; }
     .team-name { font-size: .82rem; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .vs { font-size: .75rem; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+
+    .score-center { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex-shrink: 0; }
+    .series-score { font-size: 1.3rem; font-weight: 800; letter-spacing: .05em; color: var(--text); }
+    .bo-label { font-size: .65rem; color: var(--muted); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 
     .card-footer { padding: .75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; align-items: center; }
     .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; }
     .btn:hover { opacity: .85; }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-primary { background: var(--accent); color: #fff; }
     .btn-copied { background: var(--live); color: #fff; }
     .meta { margin-left: auto; font-size: .72rem; color: var(--muted); }
-    .match-id { font-size: .7rem; color: var(--muted); font-family: monospace; }
+
+    /* Tooltip hover */
+    .card-tooltip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: .85rem 1rem;
+      z-index: 200;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      font-size: .78rem;
+    }
+    .card:hover .card-tooltip { display: block; }
+
+    .tooltip-section { margin-bottom: .65rem; }
+    .tooltip-section:last-child { margin-bottom: 0; }
+    .tooltip-title { font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+
+    .veto-list { display: flex; flex-direction: column; gap: .2rem; }
+    .veto-item { display: flex; align-items: center; gap: .4rem; }
+    .veto-icon { font-size: .75rem; width: 14px; text-align: center; flex-shrink: 0; }
+    .veto-map { font-weight: 600; color: var(--text); flex: 1; }
+    .veto-team { color: var(--muted); font-size: .72rem; }
+
+    .map-list { display: flex; flex-direction: column; gap: .3rem; }
+    .map-item { display: flex; align-items: center; gap: .5rem; }
+    .map-num { font-size: .65rem; color: var(--muted); width: 14px; flex-shrink: 0; }
+    .map-name { font-weight: 600; flex: 1; }
+    .map-score { font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .map-score.won { color: var(--live); }
+    .map-score.lost { color: #ef4444; }
+    .map-score.live { color: var(--accent); }
 
     .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
     .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
@@ -79,8 +99,7 @@
 <header>
   <div class="logo">GOTV <span>Broadcast</span></div>
   <div class="live-count" id="live-count" style="display:none">
-    <span class="dot-live"></span>
-    <span id="live-num">0</span> en direct
+    <span class="dot-live"></span><span id="live-num">0</span> en direct
   </div>
 </header>
 <main>
@@ -106,49 +125,103 @@ function logoEl(logo, name) {
   return name ? name.charAt(0).toUpperCase() : '?';
 }
 
-function copyUrl(slug, sessionToken, btn) {
+function copyPlaycast(slug, sessionToken, btn) {
   const url = `${PUBLIC_URL}/${slug}/${sessionToken}`;
-  navigator.clipboard.writeText(url).then(() => {
-    btn.classList.remove('btn-secondary');
-    btn.classList.add('btn-copied');
+  navigator.clipboard.writeText(`playcast "${url}"`).then(() => {
+    btn.classList.remove('btn-primary'); btn.classList.add('btn-copied');
     btn.textContent = '✓ Copié';
-    setTimeout(() => {
-      btn.classList.remove('btn-copied');
-      btn.classList.add('btn-secondary');
-      btn.textContent = '🔗 URL';
-    }, 1800);
+    setTimeout(() => { btn.classList.remove('btn-copied'); btn.classList.add('btn-primary'); btn.textContent = '▶ Regarder'; }, 1800);
   });
+}
+
+function renderVetos(vetos) {
+  if (!vetos || !vetos.length) return '';
+  const icons = { pick: '✅', ban: '❌', remove: '❌', default: '📌' };
+  const items = vetos.map(v => {
+    const icon = icons[v.pick_or_veto?.toLowerCase()] || icons.default;
+    return `<div class="veto-item">
+      <span class="veto-icon">${icon}</span>
+      <span class="veto-map">${mapLabel(v.map)}</span>
+      <span class="veto-team">${v.team_name || ''}</span>
+    </div>`;
+  }).join('');
+  return `<div class="tooltip-section">
+    <div class="tooltip-title">Veto</div>
+    <div class="veto-list">${items}</div>
+  </div>`;
+}
+
+function renderMapScores(maps, team1, team2) {
+  if (!maps || !maps.length) return '';
+  const items = maps.map((m, i) => {
+    const finished = !!m.end_time;
+    const s1 = m.team1_score ?? 0, s2 = m.team2_score ?? 0;
+    let scoreClass = 'live', scoreStr = `${s1} : ${s2}`;
+    if (finished) {
+      if (s1 > s2) { scoreClass = 'won'; }
+      else if (s2 > s1) { scoreClass = 'lost'; }
+      else scoreClass = '';
+      scoreStr = `${s1} — ${s2}`;
+    }
+    return `<div class="map-item">
+      <span class="map-num">${i+1}</span>
+      <span class="map-name">${mapLabel(m.map_name)}</span>
+      <span class="map-score ${scoreClass}">${scoreStr}${!finished ? ' 🔴' : ''}</span>
+    </div>`;
+  }).join('');
+  return `<div class="tooltip-section">
+    <div class="tooltip-title">Cartes</div>
+    <div class="map-list">${items}</div>
+  </div>`;
 }
 
 function renderCard(m) {
   const badge = m.live
     ? `<span class="badge badge-live">Live</span>`
     : `<span class="badge badge-replay">Replay</span>`;
-  const matchIdTxt = m.matchId ? `<span class="match-id">#${m.matchId}</span>` : '';
+
+  const boLabel = m.maxMaps > 1 ? `BO${m.maxMaps}` : 'BO1';
+  const showSeries = m.maxMaps > 1;
+
+  const scoreCenter = showSeries
+    ? `<div class="score-center">
+        <div class="series-score">${m.team1SeriesScore} — ${m.team2SeriesScore}</div>
+        <div class="bo-label">${boLabel}</div>
+      </div>`
+    : `<div class="score-center"><div class="bo-label">${boLabel}</div></div>`;
+
+  const hasTooltip = (m.vetos && m.vetos.length) || (m.maps && m.maps.length);
+  const tooltip = hasTooltip ? `<div class="card-tooltip">
+    ${renderVetos(m.vetos)}
+    ${renderMapScores(m.maps, m.team1, m.team2)}
+  </div>` : '';
 
   return `
   <div class="card">
-    <div class="card-header">
-      ${badge}
-      <span class="map-label">${mapLabel(m.map)} ${matchIdTxt}</span>
-    </div>
-    <div class="card-body">
-      <div class="matchup">
-        <div class="team">
-          <div class="team-logo">${logoEl(m.team1Logo, m.team1)}</div>
-          <div class="team-name">${m.team1 || 'TBD'}</div>
-        </div>
-        <div class="vs">VS</div>
-        <div class="team">
-          <div class="team-logo">${logoEl(m.team2Logo, m.team2)}</div>
-          <div class="team-name">${m.team2 || 'TBD'}</div>
+    <div class="card-inner">
+      <div class="card-header">
+        ${badge}
+        <span class="map-label">${mapLabel(m.map)}${m.matchId ? ` <span style="opacity:.5;font-family:monospace">#${m.matchId}</span>` : ''}</span>
+      </div>
+      <div class="card-body">
+        <div class="matchup">
+          <div class="team">
+            <div class="team-logo">${logoEl(m.team1Logo, m.team1)}</div>
+            <div class="team-name">${m.team1 || 'TBD'}</div>
+          </div>
+          ${scoreCenter}
+          <div class="team">
+            <div class="team-logo">${logoEl(m.team2Logo, m.team2)}</div>
+            <div class="team-name">${m.team2 || 'TBD'}</div>
+          </div>
         </div>
       </div>
+      <div class="card-footer">
+        <button class="btn btn-primary" onclick="copyPlaycast('${m.slug}','${m.sessionToken}',this)">▶ Regarder</button>
+        <span class="meta">il y a ${timeAgo(m.lastActivity)}</span>
+      </div>
     </div>
-    <div class="card-footer">
-      <button class="btn btn-secondary" onclick="copyUrl('${m.slug}','${m.sessionToken}',this)">🔗 URL</button>
-      <span class="meta">il y a ${timeAgo(m.lastActivity)}</span>
-    </div>
+    ${tooltip}
   </div>`;
 }
 
@@ -159,12 +232,8 @@ async function load() {
   const replays = matches.filter(m => !m.live);
 
   const liveCount = document.getElementById('live-count');
-  if (live.length > 0) {
-    liveCount.style.display = 'flex';
-    document.getElementById('live-num').textContent = live.length;
-  } else {
-    liveCount.style.display = 'none';
-  }
+  if (live.length > 0) { liveCount.style.display = 'flex'; document.getElementById('live-num').textContent = live.length; }
+  else liveCount.style.display = 'none';
 
   const app = document.getElementById('app');
   if (matches.length === 0) {
@@ -173,8 +242,8 @@ async function load() {
   }
 
   let html = '';
-  if (live.length > 0) html += `<div class="section-title">En direct</div><div class="grid">${live.map(renderCard).join('')}</div>`;
-  if (replays.length > 0) html += `<div class="section-title">Replays récents</div><div class="grid">${replays.map(renderCard).join('')}</div>`;
+  if (live.length) html += `<div class="section-title">En direct</div><div class="grid">${live.map(renderCard).join('')}</div>`;
+  if (replays.length) html += `<div class="section-title">Replays récents</div><div class="grid">${replays.map(renderCard).join('')}</div>`;
   app.innerHTML = html;
 }
 

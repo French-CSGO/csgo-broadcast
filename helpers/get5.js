@@ -3,7 +3,6 @@ const log = require('./logger');
 
 const SERVER_PREFIX = process.env.SERVER_PREFIX || 'CS';
 
-// "CS2-Tournament-1.1" → last segment "1.1" → "CS 1.1"
 function slugToDisplayName(slug) {
   const parts = slug.split('-');
   const displayName = `${SERVER_PREFIX} ${parts[parts.length - 1]}`;
@@ -17,6 +16,7 @@ async function findMatchBySlug(slug) {
 
   const [[row]] = await db.query(
     `SELECT m.id AS match_id,
+            m.team1_series_score, m.team2_series_score, m.max_maps,
             t1.name AS team1_name, t1.logo AS team1_logo,
             t2.name AS team2_name, t2.logo AS team2_logo,
             gs.display_name AS server_name
@@ -33,12 +33,7 @@ async function findMatchBySlug(slug) {
   );
 
   if (row) {
-    log.debug('get5', 'Match trouvé en DB', {
-      display_name: displayName,
-      match_id: row.match_id,
-      team1: row.team1_name,
-      team2: row.team2_name,
-    });
+    log.debug('get5', 'Match trouvé en DB', { display_name: displayName, match_id: row.match_id, team1: row.team1_name, team2: row.team2_name });
   } else {
     log.debug('get5', 'Aucun résultat en DB', { display_name: displayName });
   }
@@ -46,4 +41,24 @@ async function findMatchBySlug(slug) {
   return row || null;
 }
 
-module.exports = { slugToDisplayName, findMatchBySlug };
+async function getMatchDetails(matchId) {
+  const [maps] = await db.query(
+    `SELECT map_number, map_name, team1_score, team2_score, end_time
+     FROM map_stats
+     WHERE match_id = ?
+     ORDER BY map_number ASC`,
+    [matchId]
+  );
+
+  const [vetos] = await db.query(
+    `SELECT team_name, map, pick_or_veto
+     FROM veto
+     WHERE match_id = ?
+     ORDER BY id ASC`,
+    [matchId]
+  );
+
+  return { maps, vetos };
+}
+
+module.exports = { slugToDisplayName, findMatchBySlug, getMatchDetails };

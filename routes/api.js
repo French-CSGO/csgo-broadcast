@@ -2,18 +2,18 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const log = require('../helpers/logger');
+const { getMatchDetails } = require('../helpers/get5');
 
 const router = express.Router();
 const BIN_DIR = path.join(__dirname, '..', 'bin');
 const timeOnlineMs = () => (parseInt(process.env.TIMEONLINE) || 5) * 60 * 1000;
 const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
-router.get('/matches', (req, res) => {
+router.get('/matches', async (req, res) => {
   if (!fs.existsSync(BIN_DIR)) return res.json([]);
 
   const result = [];
 
-  // Structure : bin/{slug}/{sessionToken}/
   for (const slug of fs.readdirSync(BIN_DIR)) {
     const slugDir = path.join(BIN_DIR, slug);
     if (!fs.statSync(slugDir).isDirectory()) continue;
@@ -34,19 +34,33 @@ router.get('/matches', (req, res) => {
       const frags = fs.existsSync(fragFile) ? JSON.parse(fs.readFileSync(fragFile)) : [];
       const isLive = age <= timeOnlineMs();
 
+      let details = { maps: [], vetos: [] };
+      if (config.matchId) {
+        try {
+          details = await getMatchDetails(config.matchId);
+        } catch (e) {
+          log.warn('api', 'Impossible de charger les détails get5', { matchId: config.matchId, error: e.message });
+        }
+      }
+
       result.push({
         slug,
         sessionToken,
         matchId: config.matchId,
         team1: config.team1,
         team1Logo: config.team1Logo,
+        team1SeriesScore: config.team1SeriesScore ?? 0,
         team2: config.team2,
         team2Logo: config.team2Logo,
+        team2SeriesScore: config.team2SeriesScore ?? 0,
+        maxMaps: config.maxMaps ?? 1,
         map: config.map,
         timestamp: config.timestamp,
         lastActivity: Math.floor(stat.mtimeMs / 1000),
         live: isLive,
         fragmentsBuffered: frags.length,
+        maps: details.maps,
+        vetos: details.vetos,
       });
     }
   }
