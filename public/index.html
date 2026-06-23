@@ -13,7 +13,6 @@
       --surface2: #1f2937;
       --border: #2d3748;
       --accent: #f97316;
-      --accent2: #fb923c;
       --live: #22c55e;
       --replay: #6366f1;
       --text: #f1f5f9;
@@ -21,12 +20,7 @@
       --radius: 12px;
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
     header {
       border-bottom: 1px solid var(--border);
@@ -35,243 +29,53 @@
       align-items: center;
       gap: 1rem;
       height: 60px;
-      position: sticky;
-      top: 0;
+      position: sticky; top: 0;
       background: var(--bg);
       z-index: 10;
     }
-
-    .logo {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
+    .logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: .05em; text-transform: uppercase; }
     .logo span { color: var(--text); }
+    .live-count { margin-left: auto; display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--muted); }
+    .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
 
-    .live-count {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
+    main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .section-title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
 
-    .dot-live {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--live);
-      animation: pulse 1.8s infinite;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color .15s, transform .15s; }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
 
-    main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
+    .badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .2rem .5rem; border-radius: 4px; }
+    .badge-live { background: rgba(34,197,94,.15); color: var(--live); border: 1px solid rgba(34,197,94,.3); }
+    .badge-live::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--live); animation:pulse 1.8s infinite; display:inline-block; }
+    .badge-replay { background: rgba(99,102,241,.15); color: var(--replay); border: 1px solid rgba(99,102,241,.3); }
 
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
+    .map-label { font-size: .72rem; color: var(--muted); font-weight: 500; }
+    .card-body { padding: 1.25rem 1rem; }
+    .matchup { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .team { display: flex; flex-direction: column; align-items: center; gap: .4rem; flex: 1; min-width: 0; }
+    .team-logo { width: 44px; height: 44px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; overflow: hidden; flex-shrink: 0; }
+    .team-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .team-name { font-size: .82rem; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .vs { font-size: .75rem; font-weight: 700; color: var(--muted); flex-shrink: 0; }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-    }
+    .card-footer { padding: .75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-copied { background: var(--live); color: #fff; }
+    .meta { margin-left: auto; font-size: .72rem; color: var(--muted); }
+    .match-id { font-size: .7rem; color: var(--muted); font-family: monospace; }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: border-color 0.15s, transform 0.15s;
-    }
-
-    .card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-    }
-
-    .badge-live {
-      background: rgba(34,197,94,.15);
-      color: var(--live);
-      border: 1px solid rgba(34,197,94,.3);
-    }
-
-    .badge-live::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--live);
-      animation: pulse 1.8s infinite;
-      display: inline-block;
-    }
-
-    .badge-replay {
-      background: rgba(99,102,241,.15);
-      color: var(--replay);
-      border: 1px solid rgba(99,102,241,.3);
-    }
-
-    .map-label {
-      font-size: 0.72rem;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .card-body {
-      padding: 1.25rem 1rem;
-    }
-
-    .matchup {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .team {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .team-logo {
-      width: 44px; height: 44px;
-      border-radius: 8px;
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .team-logo img {
-      width: 100%; height: 100%;
-      object-fit: contain;
-    }
-
-    .team-name {
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .vs {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .card-footer {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.85rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s, background 0.15s;
-    }
-
-    .btn:hover { opacity: 0.85; }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background: var(--surface2);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-copied {
-      background: var(--live);
-      color: #fff;
-    }
-
-    .meta {
-      margin-left: auto;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-
-    .empty {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--muted);
-    }
-
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
     .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .empty-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
-
-    .match-id {
-      font-size: 0.7rem;
-      color: var(--muted);
-      font-family: monospace;
-    }
+    .empty-title { font-size: 1rem; font-weight: 600; margin-bottom: .4rem; color: var(--text); }
   </style>
 </head>
 <body>
-
 <header>
   <div class="logo">GOTV <span>Broadcast</span></div>
   <div class="live-count" id="live-count" style="display:none">
@@ -279,16 +83,9 @@
     <span id="live-num">0</span> en direct
   </div>
 </header>
-
 <main>
-  <div id="app">
-    <div class="empty">
-      <div class="empty-icon">📡</div>
-      <div class="empty-title">Chargement…</div>
-    </div>
-  </div>
+  <div id="app"><div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Chargement…</div></div></div>
 </main>
-
 <script>
 const PUBLIC_URL = window.location.origin;
 
@@ -301,19 +98,16 @@ function timeAgo(ts) {
 
 function mapLabel(map) {
   if (!map) return '—';
-  return map.replace('de_', '').replace('cs_', '').toUpperCase();
+  return map.replace('de_','').replace('cs_','').toUpperCase();
 }
 
 function logoEl(logo, name) {
-  if (logo) {
-    return `<img src="${logo}" alt="${name}" onerror="this.replaceWith(document.createTextNode('🏳️'))" />`;
-  }
+  if (logo) return `<img src="${logo}" alt="${name}" onerror="this.replaceWith(document.createTextNode('🏳️'))" />`;
   return name ? name.charAt(0).toUpperCase() : '?';
 }
 
-function copyWatch(slug, btn) {
-  const url = `${PUBLIC_URL}/${slug}`;
-  const cmd = `+connect_gotv_plus ; +tv_broadcast_url "${url}" ; connect_gotv_plus`;
+function copyUrl(slug, sessionToken, btn) {
+  const url = `${PUBLIC_URL}/${slug}/${sessionToken}`;
   navigator.clipboard.writeText(url).then(() => {
     btn.classList.remove('btn-secondary');
     btn.classList.add('btn-copied');
@@ -330,14 +124,13 @@ function renderCard(m) {
   const badge = m.live
     ? `<span class="badge badge-live">Live</span>`
     : `<span class="badge badge-replay">Replay</span>`;
-  const map = mapLabel(m.map);
   const matchIdTxt = m.matchId ? `<span class="match-id">#${m.matchId}</span>` : '';
 
   return `
   <div class="card">
     <div class="card-header">
       ${badge}
-      <span class="map-label">${map} ${matchIdTxt}</span>
+      <span class="map-label">${mapLabel(m.map)} ${matchIdTxt}</span>
     </div>
     <div class="card-body">
       <div class="matchup">
@@ -353,7 +146,7 @@ function renderCard(m) {
       </div>
     </div>
     <div class="card-footer">
-      <button class="btn btn-secondary" onclick="copyWatch('${m.slug}', this)">🔗 URL</button>
+      <button class="btn btn-secondary" onclick="copyUrl('${m.slug}','${m.sessionToken}',this)">🔗 URL</button>
       <span class="meta">il y a ${timeAgo(m.lastActivity)}</span>
     </div>
   </div>`;
@@ -362,40 +155,26 @@ function renderCard(m) {
 async function load() {
   const res = await fetch('/api/matches');
   const matches = await res.json();
-
   const live = matches.filter(m => m.live);
   const replays = matches.filter(m => !m.live);
 
   const liveCount = document.getElementById('live-count');
-  const liveNum = document.getElementById('live-num');
   if (live.length > 0) {
     liveCount.style.display = 'flex';
-    liveNum.textContent = live.length;
+    document.getElementById('live-num').textContent = live.length;
+  } else {
+    liveCount.style.display = 'none';
   }
 
   const app = document.getElementById('app');
-
   if (matches.length === 0) {
-    app.innerHTML = `<div class="empty">
-      <div class="empty-icon">📡</div>
-      <div class="empty-title">Aucun broadcast actif</div>
-      <p>Les matchs apparaîtront ici dès que les serveurs CS démarrent la diffusion.</p>
-    </div>`;
+    app.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Aucun broadcast actif</div><p>Les matchs apparaîtront ici dès que les serveurs CS démarrent la diffusion.</p></div>`;
     return;
   }
 
   let html = '';
-
-  if (live.length > 0) {
-    html += `<div class="section-title">En direct</div>
-    <div class="grid">${live.map(renderCard).join('')}</div>`;
-  }
-
-  if (replays.length > 0) {
-    html += `<div class="section-title">Replays récents</div>
-    <div class="grid">${replays.map(renderCard).join('')}</div>`;
-  }
-
+  if (live.length > 0) html += `<div class="section-title">En direct</div><div class="grid">${live.map(renderCard).join('')}</div>`;
+  if (replays.length > 0) html += `<div class="section-title">Replays récents</div><div class="grid">${replays.map(renderCard).join('')}</div>`;
   app.innerHTML = html;
 }
 

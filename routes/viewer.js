@@ -8,10 +8,9 @@ const BIN_DIR = path.join(__dirname, '..', 'bin');
 const fragDelay = () => parseInt(process.env.FRAG_DELAY) || 10;
 const timeOnlineMs = () => (parseInt(process.env.TIMEONLINE) || 5) * 60 * 1000;
 
-function smallestFullFragment(slug) {
-  const dir = path.join(BIN_DIR, slug);
+function smallestFullFragment(sessionDir) {
   let min = Infinity;
-  for (const f of fs.readdirSync(dir)) {
+  for (const f of fs.readdirSync(sessionDir)) {
     const m = f.match(/^(\d+)_full$/);
     if (m) min = Math.min(min, parseInt(m[1]));
   }
@@ -22,26 +21,27 @@ function toInt(v) {
   return typeof v === 'number' ? v : parseInt(v);
 }
 
-router.get('/:slug/sync', (req, res) => {
-  const { slug } = req.params;
-  const dir = path.join(BIN_DIR, slug);
-  const configFile = path.join(dir, 'config.json');
+// CS2 viewers demandent : GET /:slug/:sessionToken/sync
+router.get('/:slug/:sessionToken/sync', (req, res) => {
+  const { slug, sessionToken } = req.params;
+  const sessionDir = path.join(BIN_DIR, slug, sessionToken);
+  const configFile = path.join(sessionDir, 'config.json');
 
-  if (!fs.existsSync(dir) || !fs.existsSync(configFile)) {
-    log.debug('viewer', 'Sync 404 — slot inexistant', { slug, ip: req.ip });
+  if (!fs.existsSync(sessionDir) || !fs.existsSync(configFile)) {
+    log.debug('viewer', 'Sync 404 — session inconnue', { slug, sessionToken, ip: req.ip });
     return res.sendStatus(404);
   }
 
-  const stat = fs.statSync(dir);
+  const stat = fs.statSync(sessionDir);
   const config = JSON.parse(fs.readFileSync(configFile));
-  const fragFile = path.join(dir, 'fragments.json');
+  const fragFile = path.join(sessionDir, 'fragments.json');
   const frags = fs.existsSync(fragFile) ? JSON.parse(fs.readFileSync(fragFile)) : [];
   const age = Date.now() - stat.mtimeMs;
   const isEnded = age > timeOnlineMs();
 
   if (isEnded) {
-    const startFrag = smallestFullFragment(slug);
-    log.debug('viewer', 'Sync replay', { slug, ip: req.ip, start_fragment: startFrag, age_min: Math.floor(age / 60000) });
+    const startFrag = smallestFullFragment(sessionDir);
+    log.debug('viewer', 'Sync replay', { slug, sessionToken, ip: req.ip, start_fragment: startFrag, age_min: Math.floor(age / 60000) });
     return res.json({
       tick: 1, rtdelay: 1, rcvage: 1,
       fragment: startFrag,
@@ -53,7 +53,7 @@ router.get('/:slug/sync', (req, res) => {
 
   if (frags.length < fragDelay()) {
     log.debug('viewer', 'Sync 404 — buffer insuffisant', {
-      slug, ip: req.ip,
+      slug, sessionToken, ip: req.ip,
       buffered: frags.length,
       needed: fragDelay(),
     });
@@ -62,7 +62,7 @@ router.get('/:slug/sync', (req, res) => {
 
   const frame = frags[0];
   log.debug('viewer', 'Sync live', {
-    slug, ip: req.ip,
+    slug, sessionToken, ip: req.ip,
     fragment: frame.fragmentNumber,
     tick: frame.tick,
     buffered: frags.length,
@@ -78,20 +78,21 @@ router.get('/:slug/sync', (req, res) => {
   });
 });
 
-router.get('/:slug/:fragmentNumber/:frameType', (req, res) => {
-  const { slug, fragmentNumber, frameType } = req.params;
-  const file = path.join(BIN_DIR, slug, `${fragmentNumber}_${frameType}`);
+// CS2 viewers demandent : GET /:slug/:sessionToken/:fragmentNumber/:frameType
+router.get('/:slug/:sessionToken/:fragmentNumber/:frameType', (req, res) => {
+  const { slug, sessionToken, fragmentNumber, frameType } = req.params;
+  const file = path.join(BIN_DIR, slug, sessionToken, `${fragmentNumber}_${frameType}`);
 
   if (!fs.existsSync(file)) {
-    log.debug('viewer', 'Fragment 404', { slug, fragment: fragmentNumber, type: frameType, ip: req.ip });
+    log.debug('viewer', 'Fragment 404', { slug, sessionToken, fragment: fragmentNumber, type: frameType, ip: req.ip });
     return res.sendStatus(404);
   }
 
   if (frameType === 'start') {
-    const stat = fs.statSync(path.join(BIN_DIR, slug));
+    const stat = fs.statSync(path.join(BIN_DIR, slug, sessionToken));
     const isReplay = (Date.now() - stat.mtimeMs) > timeOnlineMs();
     log.info('viewer', isReplay ? 'Lecture replay démarrée' : 'Lecture live démarrée', {
-      slug, fragment: fragmentNumber, ip: req.ip,
+      slug, sessionToken, fragment: fragmentNumber, ip: req.ip,
     });
   }
 

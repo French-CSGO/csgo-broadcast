@@ -12,35 +12,43 @@ router.get('/matches', (req, res) => {
   if (!fs.existsSync(BIN_DIR)) return res.json([]);
 
   const result = [];
+
+  // Structure : bin/{slug}/{sessionToken}/
   for (const slug of fs.readdirSync(BIN_DIR)) {
-    const dir = path.join(BIN_DIR, slug);
-    const stat = fs.statSync(dir);
-    if (!stat.isDirectory()) continue;
+    const slugDir = path.join(BIN_DIR, slug);
+    if (!fs.statSync(slugDir).isDirectory()) continue;
 
-    const configFile = path.join(dir, 'config.json');
-    if (!fs.existsSync(configFile)) continue;
+    for (const sessionToken of fs.readdirSync(slugDir)) {
+      const sessionDir = path.join(slugDir, sessionToken);
+      const stat = fs.statSync(sessionDir);
+      if (!stat.isDirectory()) continue;
 
-    const age = Date.now() - stat.mtimeMs;
-    if (age > RETENTION_MS) continue;
+      const configFile = path.join(sessionDir, 'config.json');
+      if (!fs.existsSync(configFile)) continue;
 
-    const config = JSON.parse(fs.readFileSync(configFile));
-    const fragFile = path.join(dir, 'fragments.json');
-    const frags = fs.existsSync(fragFile) ? JSON.parse(fs.readFileSync(fragFile)) : [];
-    const isLive = age <= timeOnlineMs();
+      const age = Date.now() - stat.mtimeMs;
+      if (age > RETENTION_MS) continue;
 
-    result.push({
-      slug,
-      matchId: config.matchId,
-      team1: config.team1,
-      team1Logo: config.team1Logo,
-      team2: config.team2,
-      team2Logo: config.team2Logo,
-      map: config.map,
-      timestamp: config.timestamp,
-      lastActivity: Math.floor(stat.mtimeMs / 1000),
-      live: isLive,
-      fragmentsBuffered: frags.length,
-    });
+      const config = JSON.parse(fs.readFileSync(configFile));
+      const fragFile = path.join(sessionDir, 'fragments.json');
+      const frags = fs.existsSync(fragFile) ? JSON.parse(fs.readFileSync(fragFile)) : [];
+      const isLive = age <= timeOnlineMs();
+
+      result.push({
+        slug,
+        sessionToken,
+        matchId: config.matchId,
+        team1: config.team1,
+        team1Logo: config.team1Logo,
+        team2: config.team2,
+        team2Logo: config.team2Logo,
+        map: config.map,
+        timestamp: config.timestamp,
+        lastActivity: Math.floor(stat.mtimeMs / 1000),
+        live: isLive,
+        fragmentsBuffered: frags.length,
+      });
+    }
   }
 
   result.sort((a, b) => b.timestamp - a.timestamp);
